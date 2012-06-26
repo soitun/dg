@@ -230,6 +230,13 @@ def tech(request):
     
     return render_to_response('technology.html')
 
+def photos(request):
+    
+    return render_to_response('photos.html')
+
+def webvideos(request):
+    return render_to_response('web_videos.html')
+
 def keyfacts(request):
     return render_to_response('key_facts.html')
 
