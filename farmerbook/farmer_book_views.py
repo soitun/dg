@@ -40,7 +40,7 @@ def get_home_page(request):
                 photo_link = "http://s3.amazonaws.com/dg_farmerbook/csp/" + str(obj[0]) + ".jpg"
         else:
                 photo_link =  "/media/farmerbook/images/sample_csp.jpg"
-        print obj[0]        
+        
         csp_leader_stats.append({'id': obj[0],
                                          'name': obj[1][1],
                                          'screenings': obj[1][2],
@@ -471,7 +471,7 @@ def get_csp_page(request):
                                                                                                                                                               'total_adoptions')
     
     left_panel_stats['partner_details'] = District.objects.filter(id = csp_district).values_list('partner__id','partner__partner_name') 
-    print left_panel_stats['partner_details']
+    
        
     for related_id in related_info:
         views_dict[related_id[0]][0] = related_id[1]
@@ -546,7 +546,7 @@ def get_partner_page(request):
     
 
     vids_stats_dict = defaultdict(lambda:[0, 0, 0, 0, 0, 0])
-    fcount = defaultdict(lambda:[0])
+    
     
     for id,interest,question in pma:
         vids_stats_dict[id][3] += 1
