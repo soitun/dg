@@ -37,18 +37,29 @@
 			<div id='page_navigation' style='margin-bottom:5px;clear:both;'></div>			
 		</div>
 		<div class='horizontal_line'> </div>
+<<<<<<< HEAD
+=======
+
+>>>>>>> csp_farmerbook_page
 		<div class = "section_title"><span style="font-size:90%; margin-left:-5px;color:#6D9D30">Service Provider</span></div>
 		<div class='service_provider_container'>
 			<div style='width:100px;float:left;'>
-				<div  style= "width:100px; height:100px; margin-left: 2px;border: 1px solid green;"src=''></div>
+				<div  style= "width:100px; height:100px; margin-left: 2px;border: 1px solid green;"src=''>
+					<a href='javascript:void(0);' onclick="cspClick({{left_panel_stats.service_provider.0.0}})"><img  style= "float:left; width:100px; height:100px;"src=''></a>
+				</div>
 				<div>{{ left_panel_stats.service_provider.0.1 }}</div>				
 			</div>
 			<div style='width:100px;float:right;'>
-				<div style= "width:100px; height:100px; margin-right: 10px; margin-left:-30px; border: 1px solid green;"src=''></div>
+				<div style= "width:100px; height:100px; margin-right: 10px; margin-left:-30px; border: 1px solid green;"src=''>
+					<a href='javascript:void(0);' onclick="cspClick({{left_panel_stats.partner.0.0}})"><img  style= "float:left; width:100px; height:100px; margin-left: 5px;"src=''></a>
+				</div>
 				<div style="margin-left:-30px;">{{ left_panel_stats.partner.0.1 }}</div>
 			</div>
 		</div>
+<<<<<<< HEAD
 
+=======
+>>>>>>> csp_farmerbook_page
 		
 		<div style='clear:both;'></div>
 	</div>
@@ -322,6 +333,7 @@ function ajax_tab_click(clicked, village_id) {
 			
 			
 }
+
 	var show_per_page = 4; 
 			//getting the amount of elements inside pag_content div
 			var number_of_items = $('#pag_content').children().size();

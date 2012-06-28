@@ -136,7 +136,46 @@
 			
 		}
 		
+		function cspClick(csp_id) {
+			
+			$("div#myModal").load('/getserviceproviderpage?csp_id='+csp_id, function(response, status, xhr) {
+				  if (status == "error") {
+					var msg = "Sorry but there was an error: ";
+					alert(msg + xhr.status + " " + xhr.statusText);
+				  }
+				  //alert('Load was performed.');
+				  $('#myModal').css('margin-top', ($('#myModal').outerHeight() / 2) * -1)
+							 .css('margin-left', ($('#myModal').outerWidth() / 2) * -1);
+				  $('#myModal').show();
+				
+				  $('#myModal').modal();
+				 
+				 mixpanel.track("Person Page Loaded");
+				  
+				});	
+			
+		}
 		
+		
+function partnerClick(partner_id) {
+			
+			$("div#myModal").load('/getpartnerpage?partner_id='+partner_id_id, function(response, status, xhr) {
+				  if (status == "error") {
+					var msg = "Sorry but there was an error: ";
+					alert(msg + xhr.status + " " + xhr.statusText);
+				  }
+				  //alert('Load was performed.');
+				  $('#myModal').css('margin-top', ($('#myModal').outerHeight() / 2) * -1)
+							 .css('margin-left', ($('#myModal').outerWidth() / 2) * -1);
+				  $('#myModal').show();
+				
+				  $('#myModal').modal();
+				 
+				 mixpanel.track("Person Page Loaded");
+				  
+				});	
+			
+		}
 		
 		function previous(){
 	
@@ -334,52 +373,46 @@
 			});						
 		}
 		
-		function cspClick(csp_id) {
-			$("#myModal").html("");
-			$("#myModal").load('/getserviceproviderpage?csp_id='+csp_id, function(response, status, xhr) {
-				  if (status == "error") {
-					var msg = "Sorry but there was an error: ";
-					alert(msg + xhr.status + " " + xhr.statusText);
-				  }
-				  //alert('Load was performed.');
-				 // alert($("div#content").html());
-				  
-				  });
-		}
-		
-		
-	(function($) {
-        $.fn.ellipsis = function()
-        {
-                return this.each(function()
-                {
-                        var el = $(this);
 
-                        if(el.css("overflow") == "hidden")
-                        {
-                                var text = el.html();
-                                var multiline = el.hasClass('multiline');
-                                var t = $(this.cloneNode(true))
-                                        .hide()
-                                        .css('position', 'absolute')
-                                        .css('overflow', 'visible')
-                                        .width(multiline ? el.width() : 'auto')
-                                        .height(multiline ? 'auto' : el.height())
-                                        ;
+		(function($) {
+	        $.fn.ellipsis = function()
+	        {
+	                return this.each(function()
+	                {
+	                        var el = $(this);
+								if(el.css("overflow") == "hidden")
+	                        {
+	                                var text = el.html();
+	                                var multiline = el.hasClass('multiline');
+	                                var t = $(this.cloneNode(true))
+	                                        .hide()
+	                                        .css('position', 'absolute')
+	                                        .css('overflow', 'visible')
+	                                        .width(multiline ? el.width() : 'auto')
+	                                        .height(multiline ? 'auto' : el.height())
+	                                        ;
 
-                                el.after(t);
+	                                el.after(t);
 
-                                function height() { return t.height() > el.height(); };
-                                function width() { return t.width() > el.width(); };
+	                                function height() { return t.height() > el.height(); };
+	                                function width() { return t.width() > el.width(); };
 
-                                var func = multiline ? height : width;
+	                                var func = multiline ? height : width;
 
-                                while (text.length > 0 && func())
-                                {
-                                        text = text.substr(0, text.length - 1);
-                                        t.html(text + "...");
-                                }
+	                                while (text.length > 0 && func())
+	                                {
+	                                        text = text.substr(0, text.length - 1);
+	                                        t.html(text + "...");
+	                                }
 
+	                                el.html(t.html());
+	                                t.remove();
+	                        }
+	                });
+	        };
+	})(jQuery);
+
+<<<<<<< HEAD
                                 el.html(t.html());
                                 t.remove();
                         }
@@ -387,6 +420,8 @@
         };
 })(jQuery);
 
+=======
+>>>>>>> csp_farmerbook_page
 		</script>
 
 <!-- start Mixpanel --><script type="text/javascript">(function(d,c){var a,b,g,e;a=d.createElement("script");a.type="text/javascript";a.async=!0;a.src=("https:"===d.location.protocol?"https:":"http:")+'//api.mixpanel.com/site_media/js/api/mixpanel.2.js';b=d.getElementsByTagName("script")[0];b.parentNode.insertBefore(a,b);c._i=[];c.init=function(a,d,f){var b=c;"undefined"!==typeof f?b=c[f]=[]:f="mixpanel";g="disable track track_pageview track_links track_forms register register_once unregister identify name_tag set_config".split(" ");
@@ -529,46 +564,29 @@ mixpanel.init("aff3746cb82389a0d95f2a660a906858");</script><!-- end Mixpanel -->
 			<div class='related_farmer'>
 			<div class="section_title"> <span style="font-size:80%; margin-left:-5px;color:#6D9D30">Service Providers</span> </div>
 			<div style="border: 2px solid #6D9D30;margin-top:2px;">
-			
+			{% for csp in csp_leader_stats %}
 				<div class="sp_details_container" style="height:auto;">
-					
-						<img src="/media/farmerbook/images/csp_1.png">				
+					<a href="javascript:void(0);" onclick="cspClick({{csp.id}})">
+						<img src={{csp.photo_link}}>		
+					</a>			
 					
 					
 					<div class="sp_details"> 
-					<a href="javascript:void(0);"  style="color: #524D4D;font-weight: bold;">
-					Rewati Devi</a> <span>facilitated 300 screenings and 230 adoptions.</span>
+					<a href="javascript:void(0);" onclick="cspClick({{csp.id}})" style="color: #524D4D;font-weight: bold;">
+					{{csp.name}}</a> <span>facilitated {{csp.screenings}} screenings and {{csp.adoptions}} adoptions.</span>
 					</div>
 					
 				</div>
+				
+			 {% endfor %}	
 			
-				<div class="sp_details_container" style="height:auto;">					
-						<img src="/media/farmerbook/images/csp_2.png">				
-					
-					<div class="sp_details"> <a href="javascript:void(0);" onclick=""  
-						style="color: #524D4D;font-weight: bold;">Manohar Kumar</a> <span>facilitated 276 screenings and 178 adoptions.</span></div>
-				</div>
-
-				<div class="sp_details_container" style="height:auto;">
-					
-						<img src="/media/farmerbook/images/csp_3.png">				
-					
-					
-					<div class="sp_details"> <a href="javascript:void(0);" onclick=""  
-					style="color: #524D4D;font-weight: bold;">Vijaya Devi</a> 
-					<span>facilitated 200 screenings and 130 adoptions.</span></div>
-					
-				</div>
-			
-				<div class="sp_details_container" style="height:auto;">					
-					
-						<img src="/media/farmerbook/images/csp_4.png">					
-					
-					<div class="sp_details"> <a href="javascript:void(0);" onclick=""  
-						style="color: #524D4D;font-weight: bold;">Pramila Mohanta</a> <span>facilitated 200 screenings and 230 adoptions.</span></div>
-				</div>
 		</div>		
-	</div>
+
+				
+			
+				
+		</div>		
+	
 	<div class='related_farmer'>
 			<div class="section_title"> <span style="font-size:80%; margin-left:-5px;color:#6D9D30">Partners</span> </div>
 			<div style="border: 2px solid #6D9D30;margin-top:2px;"></div>
