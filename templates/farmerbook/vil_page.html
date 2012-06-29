@@ -37,10 +37,7 @@
 			<div id='page_navigation' style='margin-bottom:5px;clear:both;'></div>			
 		</div>
 		<div class='horizontal_line'> </div>
-<<<<<<< HEAD
-=======
 
->>>>>>> csp_farmerbook_page
 		<div class = "section_title"><span style="font-size:90%; margin-left:-5px;color:#6D9D30">Service Provider</span></div>
 		<div class='service_provider_container'>
 			<div style='width:100px;float:left;'>
@@ -56,10 +53,7 @@
 				<div style="margin-left:-30px;">{{ left_panel_stats.partner.0.1 }}</div>
 			</div>
 		</div>
-<<<<<<< HEAD
 
-=======
->>>>>>> csp_farmerbook_page
 		
 		<div style='clear:both;'></div>
 	</div>
@@ -178,77 +172,6 @@
 			</div>
 				
 			</div>
-
-			<!--<div class='vil_tabcontent' id="viewerscontent" style='width:100%; margin:0px;height:0px;visibility:hidden;'>
-				<div class="carousel slide span8" id="viewCarousel" style="width:710px;">
-				<div class="carousel-inner" style="height:300px;">				
-				{% for person in top_viewers_stats %}
-						{% if forloop.counter0|divisibleby:"3" %}				    
-								<div class="item{% if forloop.first %} active{%endif%}">							
-								<ul class="thumbnails" style="margin-left:24px; margin-top:1px;height:310px;">										
-						{% endif%}
-						<li style="margin-left:2px;margin-top:-9px;">
-							<div  class= 'farmer_details_container'>
-							{% if forloop.counter0 == 0%}
-								<img  src="/media/farmerbook/images/10000000010181_tn.jpg">
-							{% endif %}
-							{% if forloop.counter0 == 1%}
-								<img  src="/media/farmerbook/images/10000000016215_tn.jpg">
-							{% endif %}
-							{% if forloop.counter0 == 2%}
-								<img  src="/media/farmerbook/images/10000000015678_thumbnail.jpg">
-							{% endif %}
-							{% if forloop.counter0 == 3%}
-								<img  src="/media/farmerbook/images/10000000016215_tn.jpg">
-							{% endif %}
-							{% if forloop.counter0 == 4%}
-								<img  src="/media/farmerbook/images/10000000015646_tn.jpg">
-							{% endif %}
-							{% if forloop.counter0 == 5%}
-								<img  src="/media/farmerbook/images/40000013263.jpg">
-							{% endif %}
-							{% if forloop.counter0 == 6%}
-								<img  src="/media/farmerbook/images/10000000010181_tn.jpg">
-							{% endif %}
-							{% if forloop.counter0 == 7%}
-								<img  src="/media/farmerbook/images/10000000016215_tn.jpg">
-							{% endif %}
-							{% if forloop.counter0 == 8%}
-								<img  src="/media/farmerbook/images/10000000015678_thumbnail.jpg">
-							{% endif %}
-							{% if forloop.counter0 == 9%}
-								<img  src="/media/farmerbook/images/10000000016215_tn.jpg">
-							{% endif %}
-							<div class='farmer_name'> <a href="javascript:void(0);" onclick="person_click({{ person.id }})">{{ person.name }}</a> </div>
-							<div class='last_adopted' style="height: 36px; overflow:hidden;"> Last adopted({{ person.date_of_adoption|date:"M d,Y" }}) : {{ person.title }} on  </div>
-							<div id="progress_bar_label" style="margin-right:5px;"> Adoption Rate </div>
-							<div class="progress progress-striped">
-							  <div class="bar "  style="width: {{ person.adoption_rate|floatformat:2 }}%; "><p> {{ person.adoption_rate|floatformat:2 }}%</p></div>
-							</div>
-							<div id = 'progress_bar_content'>
-								<div style="margin-right:10px; float:left; font-weight:bold; width:80px"> {{ person.date_of_joining|date:"M d,Y" }} </div>
-								<div style="margin-right:33px; float:left; font-weight:bold; width:25px"> {{ person.views }} </div>
-								<div style="margin-right:0px; float:left; font-weight:bold"> {{ person.adoptions }}	</div>
-								<div style="clear:both;"></div>
-								<div style="margin-right:57px; float:left;"> Joined </div>
-								<div style="margin-right:25px; float:left;"> Views	</div>
-								<div style="margin-right:0px; float:left;"> Adopted </div>		
-							</div>
-							</div>
-						</li>
-						{% if forloop.counter|divisibleby:"3" and not forloop.first or forloop.last %}						    
-							</div>							
-							</ul>										
-						{% endif%}
-				{% endfor %}					
-				</div>
-				<a data-slide="prev" href="#viewCarousel" class="left carousel-control" style="margin-left:-34px;"><</a>
-				<a data-slide="next" href="#viewCarousel" class="carousel-control" style="margin-left:650px !important">></a>
-			</div>
-				
-			</div>-->
-
-			
     	</div>		
   </div>
 </div>
