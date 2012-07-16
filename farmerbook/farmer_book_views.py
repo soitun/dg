@@ -45,14 +45,12 @@ def get_home_page(request):
                 photo_link = "http://s3.amazonaws.com/dg_farmerbook/csp/" + str(obj[0]) + ".jpg"
         else:
                 photo_link =  "/media/farmerbook/images/sample_csp.jpg"
-        
+
         csp_leader_stats.append({'id': obj[0],
                                          'name': obj[1][1],
                                          'screenings': obj[1][2],
                                          'photo_link': photo_link,
                                          'adoptions': obj[1][3]})
-        
-    
     top_partner_stats = defaultdict(lambda:[0, 0, 0, 0])     
     partner_info = Partners.objects.all().annotate(num_vill = Count('district__block__village', distinct = True),
                                                    num_farmers = Count('district__block__village__person')).values_list('id',
@@ -645,9 +643,9 @@ def get_partner_page(request):
 #      
 #    sorted_videos_watched_stats = sorted(videos_watched_stats, key=lambda k: k['screenings'], reverse=True)
     
-    
+    id_list = get_id_with_images.get_partner_list()
     partner_stats_dict = defaultdict(lambda:[0, 0, 0, 0, 0, 0, 0, 0])
-    other_partner_info = Partners.objects.exclude(id = partner_id).values_list('id','partner_name','date_of_association')
+    other_partner_info = Partners.objects.filter(id__in = id_list).exclude(id = partner_id).values_list('id','partner_name','date_of_association')
     for partner_id,partner_name,startdate in other_partner_info:
         partner_stats_dict[partner_id][0] = partner_id
         partner_stats_dict[partner_id][1] = partner_name
