@@ -78,6 +78,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     #'django.contrib.sites',
     'django.contrib.admindocs',
+    'haystack',
     'dashboard',
     'debug_toolbar',
     'raven.contrib.django',
@@ -86,6 +87,10 @@ INSTALLED_APPS = (
     'farmerbook',
     'video_practice_map',
    )
+
+HAYSTACK_SITECONF = 'search_sites'
+HAYSTACK_SEARCH_ENGINE = 'whoosh'
+HAYSTACK_WHOOSH_PATH = os.path.join(PROJECT_PATH, 'whoosh')
 
 LOGGING = {
     'version': 1,
