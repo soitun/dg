@@ -24,6 +24,8 @@ from forms import *
 from filter_utils import filter_objects_for_date
 from views import *
 
+from haystack.query import SQ,SearchQuerySet
+
 def search(request):
     """
     Searches in the fields of the given related model and returns the
@@ -1761,21 +1763,35 @@ def get_screenings_online(request, offset, limit):
         return redirect('screenings')
     searchText = request.GET.get('searchText')
     villages = get_user_villages(request)
-    count = Screening.objects.filter(village__in = villages).distinct().count()
-    screenings = Screening.objects.filter(village__in = villages)
+    json_subcat='EOF'
+    count=0
     if(searchText):
-        vil = villages.filter(village_name__icontains = searchText)
-        screening_in_village=screenings.filter(Q(village__in = vil))
-        screening_on_date = filter_objects_for_date(screenings, 'date', searchText)
-        screenings = screening_in_village | screening_on_date
-        count = len(screenings)
-        screenings = screenings.order_by("date")[offset:limit]
+        #get user related screenings
+        sq = SQ()
+        for v in villages:	
+            sq.add(SQ(village_id=v.id), SQ.OR)
+        sqs = SearchQuerySet().filter(sq).models(Screening)
+        #search it
+        sqs = sqs.filter(content=searchText).models(Screening)
+        count = sqs.count()
+        #sort it
+        sqs = sqs.order_by("date")
+        #slice it
+        sqs = sqs[int(offset):int(limit)]
+        #send it
+        if(count>0):
+            json_subcat=serializers.serialize("json", [x.object for x in sqs],relations=('village',))
+        else:
+            json_subcat = 'EOF'
     else:
+        count = Screening.objects.filter(village__in = villages).distinct().count()
+        screenings = Screening.objects.filter(village__in = villages)
         screenings = screenings.order_by("-id")[offset:limit]
-    if(screenings):
-        json_subcat = serializers.serialize("json", screenings, relations=('village',))
-    else:
-        json_subcat = 'EOF'
+        if(screenings):
+            json_subcat = serializers.serialize("json", screenings, relations=('village',))
+        else:
+            json_subcat = 'EOF'
+    
     response = HttpResponse(json_subcat, mimetype="application/javascript")
     response['X-COUNT'] = count
     return response
