@@ -22,7 +22,7 @@ yt_service.developer_key = 'AI39si74a5fwzrBsgSxjgImSsImXHfGgt8IpozLxty9oGP7CH0ky
 yt_service.ssl = False
 
 error_ids = {}
-filter_all = (date.today().days) % 7 == 0  #Check all videos every 7 days. Daily check for new videos only.
+filter_all = (date.today().day) % 7 == 0  #Check all videos every 7 days. Daily check for new videos only.
 if filter_all:
     vids = Video.objects.exclude(youtubeid='')
 else:
