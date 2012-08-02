@@ -24,13 +24,17 @@ var bubble_options={colors: ['00CC33','#7edc32','#26d52f','#909504','#f9c423','#
 		bubble: {textStyle: {color: 'none'}}
 };
 function drawCharts() {
-	$.getJSON('/analytics/screening_geog_pie_data/?'+search_params, function(json){geog_pie(json);});
-	$.getJSON('/analytics/screening_monthwise_bar_data/?'+search_params, function(json){monthwise_column(json);});
-	$.getJSON('/analytics/screening_practice_wise_scatter_data/?'+search_params, function(json){practice_bubble(json);});
-	$.getJSON('/analytics/screening_mf_ratio/?'+search_params, function(json){gender_pie(json);});
-	$.getJSON('/analytics/screening_per_day_line/?'+search_params, function(json){day_line(json);});
-	$.getJSON('/analytics/screening_tot_lines/?'+search_params, function(json){total_line(json);});
-	$.getJSON('/analytics/screening_percent_lines/?'+search_params, function(json){percent_line(json);});
+	$.getJSON('/analytics/screening_geog_pie_data/'+search_params, function(json){geog_pie(json);});
+	$.getJSON('/analytics/screening_monthwise_bar_data/'+search_params, function(json){monthwise_column(json);});
+	$.getJSON('/analytics/screening_practice_wise_scatter_data/'+search_params, function(json){practice_bubble(json);});
+	$.getJSON('/analytics/screening_mf_ratio/'+search_params, function(json){gender_pie(json);});
+	$.getJSON('/analytics/screening_per_day_line/'+search_params, function(json){day_line(json);});
+	$.getJSON('/analytics/screening_tot_lines/'+search_params, function(json){total_line(json);});
+	$.getJSON('/analytics/screening_percent_lines/'+search_params, function(json){percent_line(json);});
+}
+
+function remove_loader(div_id){
+	document.getElementById(div_id).style.backgroundImage = "none";
 }
 
 function geog_pie(json) {
@@ -78,7 +82,7 @@ function monthwise_column(json) {
 		'options':options,
 		'dataTable':monthwise_column_chart_data
 	});
-
+	remove_loader(monthwise_column_chart.getContainerId());
 	monthwise_column_chart.draw();
 	exp_monthwise_column_chart=new google.visualization.ChartWrapper({
 		'chartType':'ColumnChart',
@@ -102,13 +106,14 @@ function total_line(json) {
 		'options':options,
 		'dataTable':total_line_chart_data
 	});
-
+	remove_loader(total_line_chart.getContainerId());
 	total_line_chart.draw();
 	exp_total_line_chart=new google.visualization.ChartWrapper({
 		'chartType':'LineChart',
 		'options':options,
 		'dataTable':total_line_chart_data
 	});
+	$("span").remove();
 }
 
 function percent_line(json) {
@@ -124,7 +129,9 @@ function percent_line(json) {
 		'options':options,
 		'dataTable':percent_line_chart_data
 	});
+	remove_loader(percent_line_chart.getContainerId());
 	percent_line_chart.draw();
+	$("span").remove();
 	exp_percent_line_chart=new google.visualization.ChartWrapper({
 		'chartType':'LineChart',
 		'options':options,
@@ -135,26 +142,31 @@ function percent_line(json) {
 function practice_bubble(json) {
 
 	var practice_bubble_chart_data = google.visualization.arrayToDataTable(json,false);
-	var xrange=practice_bubble_chart_data.getColumnRange(1);
-	var yrange=practice_bubble_chart_data.getColumnRange(2);
-	var options = jQuery.extend(true, {}, bubble_options);
-	options['hAxis']= {title: 'Practices',  maxValue: xrange.max, minValue: xrange.min, gridlines:{count:10},textColor: '#ffffff'};
-	options['vAxis']= {title: 'Number of Disseminations',gridlines:{count:10}, maxValue: yrange.max };
-	options['sizeAxis']={maxSize: 20};
+	if(json.length>1)
+	{
+		var xrange=practice_bubble_chart_data.getColumnRange(1);
+		var yrange=practice_bubble_chart_data.getColumnRange(2);
+		var options = jQuery.extend(true, {}, bubble_options);
+		options['hAxis']= {title: 'Practices',  maxValue: xrange.max, minValue: xrange.min, gridlines:{count:10},textColor: '#ffffff'};
+		options['vAxis']= {title: 'Number of Disseminations',gridlines:{count:10}, maxValue: yrange.max };
+		options['sizeAxis']={maxSize: 20};
+		options['chartArea']={left:60,top:40,width:"85%",height:"75%"};
 
-
+	}
 	var practice_bubble_chart = new google.visualization.ChartWrapper({
 		'chartType':'BubbleChart',
 		'containerId':'javascript_practice_type_bubble',
 		'options':options,
 		'dataTable':practice_bubble_chart_data
 	});
+	remove_loader(practice_bubble_chart.getContainerId());
 	practice_bubble_chart.draw();
 	exp_practice_bubble_chart=new google.visualization.ChartWrapper({
 		'chartType':'BubbleChart',
 		'options':options,
 		'dataTable':practice_bubble_chart_data
 	});
+	$("span").remove();
 }
 
 function gender_pie(json) {
@@ -174,10 +186,10 @@ function gender_pie(json) {
 		'options':options,
 		'dataTable':gender_pie_chart_data
 	});
+	$("span").remove();
 }
 
 function day_line(json) {
-
 	var day_line_chart_data = google.visualization.arrayToDataTable(json,false);
 	var options = jQuery.extend(true, {}, line_options);
 	options['legend']={position: 'in'};
@@ -188,11 +200,13 @@ function day_line(json) {
 		'options':options,
 		'dataTable':day_line_chart_data
 	});
+	remove_loader(day_line_chart.getContainerId());
 	day_line_chart.draw();
 	exp_day_line_chart=new google.visualization.ChartWrapper({
 		'chartType':'LineChart',
 		'options':options,
 		'dataTable':day_line_chart_data
 	});
+	$("span").remove();
 }
 
