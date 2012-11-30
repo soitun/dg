@@ -8,16 +8,23 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding field 'PersonAdoptPractice.time_updated'
-        db.add_column(u'PERSON_ADOPT_PRACTICE', 'time_updated',
-                      self.gf('django.db.models.fields.DateTimeField')(auto_now=True, null=True, blank=True),
-                      keep_default=False)
-        
-    def backwards(self, orm):
-        # Deleting field 'PersonAdoptPractice.time_updated'
-        db.delete_column(u'PERSON_ADOPT_PRACTICE', 'time_updated')
+        # Adding model 'ServerLog'
+        db.create_table('dashboard_serverlog', (
+            ('id', self.gf('dashboard.fields.BigAutoField')(primary_key=True)),
+            ('timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('village', self.gf('dashboard.fields.BigForeignKey')(related_name='log', to=orm['dashboard.Village'])),
+            ('action', self.gf('django.db.models.fields.IntegerField')()),
+            ('entry_table', self.gf('django.db.models.fields.CharField')(max_length=30)),
+            ('field_values', self.gf('django.db.models.fields.TextField')()),
+        ))
+        db.send_create_signal('dashboard', ['ServerLog'])
 
         
+
+    def backwards(self, orm):
+        # Deleting model 'ServerLog'
+        db.delete_table('dashboard_serverlog')
+
     models = {
         'auth.group': {
             'Meta': {'object_name': 'Group'},
@@ -347,6 +354,15 @@ class Migration(SchemaMigration):
             'target_person_attendance': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'db_column': "'TARGET_PERSON_ATTENDANCE'", 'blank': 'True'}),
             'videoes_screened': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['dashboard.Video']", 'symmetrical': 'False'}),
             'village': ('dashboard.fields.BigForeignKey', [], {'to': "orm['dashboard.Village']"})
+        },
+        'dashboard.serverlog': {
+            'Meta': {'object_name': 'ServerLog'},
+            'action': ('django.db.models.fields.IntegerField', [], {}),
+            'entry_table': ('django.db.models.fields.CharField', [], {'max_length': '30'}),
+            'field_values': ('django.db.models.fields.TextField', [], {}),
+            'id': ('dashboard.fields.BigAutoField', [], {'primary_key': 'True'}),
+            'timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
+            'village': ('dashboard.fields.BigForeignKey', [], {'related_name': "'log'", 'to': "orm['dashboard.Village']"})
         },
         'dashboard.state': {
             'Meta': {'object_name': 'State', 'db_table': "u'STATE'"},

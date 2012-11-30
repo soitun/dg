@@ -6,10 +6,12 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.db import models
 from django.db.models import Min, Count, F
-from django.db.models.signals import pre_delete, post_delete, m2m_changed, pre_save
+from django.db.models.signals import pre_delete, post_delete, m2m_changed, pre_save, post_save
 from dashboard.fields import BigAutoField, BigForeignKey, PositiveBigIntegerField
 import sys, traceback
-
+from django.core import serializers
+from django.forms.models import model_to_dict
+import simplejson as json
 # Variables
 GENDER_CHOICES = (
     ('M', 'Male'),
@@ -369,6 +371,18 @@ class FarmerbookManager(models.Manager):
     def get_query_set(self):
         return super(FarmerbookManager, self).get_query_set().filter(image_exists=True)
 
+class ServerLog(models.Model):
+    id = BigAutoField(primary_key=True)
+    timestamp = models.DateTimeField(auto_now=True)
+    village = BigForeignKey(Village,related_name = "log")
+    action = models.IntegerField()
+    entry_table = models.CharField(max_length=30)
+    field_values = models.TextField()
+    
+    def __unicode__(self):
+        return self.entry_table
+
+
 class Person(models.Model):
     id = BigAutoField(primary_key = True)
     person_name = models.CharField(max_length=100, db_column='PERSON_NAME')
@@ -391,6 +405,14 @@ class Person(models.Model):
     class Meta:
         db_table = u'PERSON'
         unique_together = ("person_name", "father_name", "group","village")
+        
+    @staticmethod
+    def log_it(sender, **kwargs):
+        instance = kwargs["instance"]
+        model_dict = model_to_dict(instance)
+        json_str = json.dumps(model_dict)
+        log = ServerLog(village = instance.village, action = 1, entry_table = "Person", field_values = json_str)
+        log.save()
         
     # Called on any update/insert/delete of PersonMeetingAttendance/PersonShownInVideo
     @staticmethod
@@ -548,6 +570,9 @@ class Person(models.Model):
         if (self.father_name is None or self.father_name==''):
             return self.person_name
         return  u'%s (%s)' % (self.person_name, self.father_name)
+
+post_save.connect(Person.log_it, sender=Person)
+
     
 class PersonRelations(models.Model):
     id = BigAutoField(primary_key = True)
