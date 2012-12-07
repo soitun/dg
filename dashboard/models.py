@@ -108,6 +108,15 @@ EQUIPMENT_PURPOSE = (
 )
 
 
+def log_it(sender, **kwargs ):
+    instance = kwargs["instance"]
+    model_dict = model_to_dict(instance)
+    json_str = json.dumps(model_dict)
+    if sender == 'dashboard.models.PersonAdoptPractice' or sender == 'dashboard.models.PersonMeetingAttendance' :
+        vill = instance.person.village
+    log = ServerLog(village = vill, action = 1, entry_table = sender, field_values = json_str)
+    log.save()
+
 class OfflineUserManager(models.Manager):
     def get_offline_pk(self, username, flag_create):
         """
@@ -374,9 +383,10 @@ class FarmerbookManager(models.Manager):
 class ServerLog(models.Model):
     id = BigAutoField(primary_key=True)
     timestamp = models.DateTimeField(auto_now=True)
+    user = models.ForeignKey(User, null = True)
     village = BigForeignKey(Village,related_name = "log")
     action = models.IntegerField()
-    entry_table = models.CharField(max_length=30)
+    entry_table = models.CharField(max_length=100)
     field_values = models.TextField()
     
     def __unicode__(self):
@@ -398,21 +408,12 @@ class Person(models.Model):
     date_of_joining = models.DateField(null=True, blank=True)
     #changes done for farmerbook. one new Boolean field image_exists added
     image_exists = models.BooleanField(default=False)
-    
     objects = models.Manager() #The default manager
     farmerbook_objects = FarmerbookManager() #The manager for farmerbook
     
     class Meta:
         db_table = u'PERSON'
         unique_together = ("person_name", "father_name", "group","village")
-        
-    @staticmethod
-    def log_it(sender, **kwargs):
-        instance = kwargs["instance"]
-        model_dict = model_to_dict(instance)
-        json_str = json.dumps(model_dict)
-        log = ServerLog(village = instance.village, action = 1, entry_table = "Person", field_values = json_str)
-        log.save()
         
     # Called on any update/insert/delete of PersonMeetingAttendance/PersonShownInVideo
     @staticmethod
@@ -541,6 +542,7 @@ class Person(models.Model):
                             if person.date_of_joining == None or check_date < person.date_of_joining:
                                 person.date_of_joining = check_date
                                 person.save()
+                            
                 else:
                     if kwargs['action'] == 'pre_clear':
                         min_date = (instance.screening_set.aggregate(Min('date'))).values()[0]
@@ -559,6 +561,7 @@ class Person(models.Model):
                         if instance.date_of_joining == None or check_date < instance.date_of_joining:
                             instance.date_of_joining = check_date
                             instance.save()
+                        
         except Exception:
             #Catching all to avoid bugs from stopping COCO
             #Sending email to rahul@digitalgreen.org
@@ -571,7 +574,7 @@ class Person(models.Model):
             return self.person_name
         return  u'%s (%s)' % (self.person_name, self.father_name)
 
-post_save.connect(Person.log_it, sender=Person)
+post_save.connect(log_it, sender = Person)
 
     
 class PersonRelations(models.Model):
@@ -738,6 +741,7 @@ class Video(models.Model):
     def __unicode__(self):
         return  u'%s (%s)' % (self.title, self.village)
     
+    
 pre_delete.connect(Person.date_of_joining_handler, sender=Video)
 pre_save.connect(Person.date_of_joining_handler, sender=Video)
 m2m_changed.connect(Person.date_of_joining_handler, sender=Video.farmers_shown.through)
@@ -873,6 +877,7 @@ class PersonAdoptPractice(models.Model):
     class Meta:
         db_table = u'PERSON_ADOPT_PRACTICE'
         unique_together = ("person", "video", "date_of_adoption")
+post_save.connect(log_it, sender = PersonAdoptPractice)
 
 class PersonMeetingAttendance(models.Model):
     id = BigAutoField(primary_key = True)
