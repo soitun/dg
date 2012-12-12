@@ -110,12 +110,31 @@ EQUIPMENT_PURPOSE = (
 
 def log_it(sender, **kwargs ):
     instance = kwargs["instance"]
+    action  = kwargs["created"]
+    sender = sender.__name__    # get the name of the table which sent the request
+    sender = str(sender)
     model_dict = model_to_dict(instance)
     json_str = json.dumps(model_dict)
-    if sender == 'dashboard.models.PersonAdoptPractice' or sender == 'dashboard.models.PersonMeetingAttendance' :
+    if sender == 'Screening' or sender == 'VideosScreenedInScreening' or sender == 'Person' :
+        vill = instance.village
+        log = ServerLog(village = vill, action = action, entry_table = sender, field_values = json_str)
+    elif sender == 'PersonAdoptPractice' or sender == 'PersonMeetingAttendance' or sender == 'PersonGroups':
         vill = instance.person.village
-    log = ServerLog(village = vill, action = 1, entry_table = sender, field_values = json_str)
-    log.save()
+        log = ServerLog(village = vill, action = action, entry_table = sender, field_values = json_str)
+    elif sender == 'Village' :
+        block = instance.block
+        log = ServerLog(block = block, action = action, entry_table = sender, field_values = json_str)
+    elif sender == 'AnimatorAssignedVillage' or sender == 'Animator':
+        block = instance.village.block
+        log = ServerLog(block = block, action = action, entry_table = sender, field_values = json_str)
+    elif sender == 'Block' :
+        block = instance.district
+        log = ServerLog(block = block, action = action, entry_table = sender, field_values = json_str)
+    try:
+        log.save()
+    except Exception as ex:
+        pass
+    
 
 class OfflineUserManager(models.Manager):
     def get_offline_pk(self, username, flag_create):
@@ -308,6 +327,7 @@ class Block(models.Model):
 
     def __unicode__(self):
         return self.block_name
+post_save.connect(log_it, sender = Block)
 
 class VillageFarmerbookManager(models.Manager):
     def get_query_set(self):
@@ -334,7 +354,7 @@ class Village(models.Model):
 
     def __unicode__(self):
         return self.village_name
-
+post_save.connect(log_it, sender = Village)
 
 class MonthlyCostPerVillage(models.Model):
     id = BigAutoField(primary_key = True)
@@ -384,7 +404,9 @@ class ServerLog(models.Model):
     id = BigAutoField(primary_key=True)
     timestamp = models.DateTimeField(auto_now=True)
     user = models.ForeignKey(User, null = True)
-    village = BigForeignKey(Village,related_name = "log")
+    village = BigForeignKey(Village, null = True ,related_name ='rel')
+    block = BigForeignKey(Block, null = True)
+    district = BigForeignKey(District, null = True)  
     action = models.IntegerField()
     entry_table = models.CharField(max_length=100)
     field_values = models.TextField()
@@ -606,7 +628,7 @@ class Animator(models.Model):
     def __unicode__(self):
         return  u'%s (%s)' % (self.name, self.village)
         #return self.name
-
+post_save.connect(log_it, sender = Animator)
 
 class Training(models.Model):
     id = BigAutoField(primary_key = True)
@@ -637,6 +659,7 @@ class AnimatorAssignedVillage(models.Model):
     start_date = models.DateField(null=True, db_column='START_DATE', blank=True)
     class Meta:
         db_table = u'ANIMATOR_ASSIGNED_VILLAGE'
+post_save.connect(log_it, sender = AnimatorAssignedVillage)
 
 class AnimatorSalaryPerMonth(models.Model):
     id = BigAutoField(primary_key = True)
@@ -848,7 +871,8 @@ class Screening(models.Model):
     
 pre_save.connect(Person.date_of_joining_handler, sender=Screening)
 m2m_changed.connect(Video.update_viewer_count, sender=Screening.videoes_screened.through)
-    
+post_save.connect(log_it, sender = Screening)
+
 class GroupsTargetedInScreening(models.Model):
     id = BigAutoField(primary_key = True)
     screening = BigForeignKey(Screening, db_column='screening_id')
@@ -862,6 +886,7 @@ class VideosScreenedInScreening(models.Model):
     video = BigForeignKey(Video, db_column='video_id')
     class Meta:
         db_table = u'SCREENING_videoes_screened'
+post_save.connect(log_it, sender = VideosScreenedInScreening)
 
 class PersonAdoptPractice(models.Model):
     id = BigAutoField(primary_key = True)
@@ -897,6 +922,7 @@ post_delete.connect(Person.date_of_joining_handler, sender = PersonMeetingAttend
 pre_delete.connect(Video.update_viewer_count, sender = PersonMeetingAttendance)
 pre_save.connect(Person.date_of_joining_handler, sender = PersonMeetingAttendance)
 pre_save.connect(Video.update_viewer_count, sender = PersonMeetingAttendance)
+post_save.connect(log_it, sender = PersonMeetingAttendance)
 
 class Equipment(models.Model):
     id = BigAutoField(primary_key = True)
