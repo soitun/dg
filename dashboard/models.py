@@ -12,6 +12,7 @@ import sys, traceback
 from django.core import serializers
 from django.forms.models import model_to_dict
 import simplejson as json
+from datetime import datetime
 # Variables
 GENDER_CHOICES = (
     ('M', 'Male'),
@@ -114,28 +115,61 @@ def log_it(sender, **kwargs ):
     sender = sender.__name__    # get the name of the table which sent the request
     sender = str(sender)
     model_dict = model_to_dict(instance)
-    json_str = json.dumps(model_dict)
-    if sender == 'Screening' or sender == 'VideosScreenedInScreening' or sender == 'Person' :
-        vill = instance.village
+    dthandler = lambda obj: obj.isoformat() if isinstance(obj, datetime) else None
+    json_str = json.dumps(model_dict, default=dthandler)
+    if sender == 'Screening' or sender == 'Person' :
+        vill = instance.village.id
+        log = ServerLog(village = vill, action = action, entry_table = sender, field_values = json_str)
+    elif sender == 'VideosScreenedInScreening' :
+        vill = instance.screening.village.id
         log = ServerLog(village = vill, action = action, entry_table = sender, field_values = json_str)
     elif sender == 'PersonAdoptPractice' or sender == 'PersonMeetingAttendance' or sender == 'PersonGroups':
-        vill = instance.person.village
+        vill = instance.person.village.id
         log = ServerLog(village = vill, action = action, entry_table = sender, field_values = json_str)
     elif sender == 'Village' :
-        block = instance.block
+        block = instance.block.id
         log = ServerLog(block = block, action = action, entry_table = sender, field_values = json_str)
     elif sender == 'AnimatorAssignedVillage' or sender == 'Animator':
-        block = instance.village.block
+        block = instance.village.block.id
         log = ServerLog(block = block, action = action, entry_table = sender, field_values = json_str)
     elif sender == 'Block' :
-        block = instance.district
-        log = ServerLog(block = block, action = action, entry_table = sender, field_values = json_str)
+        district = instance.district.id
+        log = ServerLog(district = district, action = action, entry_table = sender, field_values = json_str)
     try:
         log.save()
     except Exception as ex:
         pass
     
-
+def delete_it(sender, **kwargs):
+    instance = kwargs["instance"]
+    sender = sender.__name__    # get the name of the table which sent the request
+    sender = str(sender)
+    model_dict = model_to_dict(instance)
+    dthandler = lambda obj: obj.isoformat() if isinstance(obj, datetime) else None
+    json_str = json.dumps(model_dict, default=dthandler)
+    if sender == 'Screening'  or sender == 'Person' :
+        vill = instance.village.id
+        log = ServerLog(village = vill, action = -1, entry_table = sender, field_values = json_str)
+    elif sender == 'VideosScreenedInScreening':
+        vill = instance.screening.village.id
+        log = ServerLog(village = vill, action = -1, entry_table = sender, field_values = json_str)
+    elif sender == 'PersonAdoptPractice' or sender == 'PersonMeetingAttendance' or sender == 'PersonGroups':
+        vill = instance.person.village.id
+        log = ServerLog(village = vill, action = -1, entry_table = sender, field_values = json_str)
+    elif sender == 'Village' :
+        block = instance.block.id
+        log = ServerLog(block = block, action = -1, entry_table = sender, field_values = json_str)
+    elif sender == 'AnimatorAssignedVillage' or sender == 'Animator':
+        block = instance.village.block.id
+        log = ServerLog(block = block, action = -1, entry_table = sender, field_values = json_str)
+    elif sender == 'Block' :
+        district = instance.district.id
+        log = ServerLog(district = district, action = -1, entry_table = sender, field_values = json_str)
+    try:
+        log.save()
+    except Exception as ex:
+        print unicode(ex)
+    
 class OfflineUserManager(models.Manager):
     def get_offline_pk(self, username, flag_create):
         """
@@ -328,6 +362,7 @@ class Block(models.Model):
     def __unicode__(self):
         return self.block_name
 post_save.connect(log_it, sender = Block)
+pre_delete.connect(delete_it, sender = Block)
 
 class VillageFarmerbookManager(models.Manager):
     def get_query_set(self):
@@ -355,6 +390,7 @@ class Village(models.Model):
     def __unicode__(self):
         return self.village_name
 post_save.connect(log_it, sender = Village)
+pre_delete.connect(delete_it, sender = Village)
 
 class MonthlyCostPerVillage(models.Model):
     id = BigAutoField(primary_key = True)
@@ -404,9 +440,9 @@ class ServerLog(models.Model):
     id = BigAutoField(primary_key=True)
     timestamp = models.DateTimeField(auto_now=True)
     user = models.ForeignKey(User, null = True)
-    village = BigForeignKey(Village, null = True ,related_name ='rel')
-    block = BigForeignKey(Block, null = True)
-    district = BigForeignKey(District, null = True)  
+    village = models.BigIntegerField(null = True)
+    block = models.BigIntegerField(null = True)
+    district = models.BigIntegerField(null = True)  
     action = models.IntegerField()
     entry_table = models.CharField(max_length=100)
     field_values = models.TextField()
@@ -597,6 +633,7 @@ class Person(models.Model):
         return  u'%s (%s)' % (self.person_name, self.father_name)
 
 post_save.connect(log_it, sender = Person)
+pre_delete.connect(delete_it, sender = Person)
 
     
 class PersonRelations(models.Model):
@@ -629,6 +666,7 @@ class Animator(models.Model):
         return  u'%s (%s)' % (self.name, self.village)
         #return self.name
 post_save.connect(log_it, sender = Animator)
+pre_delete.connect(delete_it, sender = Animator)
 
 class Training(models.Model):
     id = BigAutoField(primary_key = True)
@@ -660,6 +698,7 @@ class AnimatorAssignedVillage(models.Model):
     class Meta:
         db_table = u'ANIMATOR_ASSIGNED_VILLAGE'
 post_save.connect(log_it, sender = AnimatorAssignedVillage)
+pre_delete.connect(delete_it, sender = AnimatorAssignedVillage)
 
 class AnimatorSalaryPerMonth(models.Model):
     id = BigAutoField(primary_key = True)
@@ -872,6 +911,7 @@ class Screening(models.Model):
 pre_save.connect(Person.date_of_joining_handler, sender=Screening)
 m2m_changed.connect(Video.update_viewer_count, sender=Screening.videoes_screened.through)
 post_save.connect(log_it, sender = Screening)
+pre_delete.connect(delete_it, sender = Screening)
 
 class GroupsTargetedInScreening(models.Model):
     id = BigAutoField(primary_key = True)
@@ -887,6 +927,7 @@ class VideosScreenedInScreening(models.Model):
     class Meta:
         db_table = u'SCREENING_videoes_screened'
 post_save.connect(log_it, sender = VideosScreenedInScreening)
+pre_delete.connect(delete_it, sender = VideosScreenedInScreening)
 
 class PersonAdoptPractice(models.Model):
     id = BigAutoField(primary_key = True)
@@ -897,12 +938,12 @@ class PersonAdoptPractice(models.Model):
     quality = models.CharField(max_length=200, db_column='QUALITY', blank=True)
     quantity = models.IntegerField(null=True, db_column='QUANTITY', blank=True)
     quantity_unit = models.CharField(max_length=150, db_column='QUANTITY_UNIT', blank=True)
-    time_updated = models.DateTimeField(auto_now=True, null=True, blank=True)
     
     class Meta:
         db_table = u'PERSON_ADOPT_PRACTICE'
         unique_together = ("person", "video", "date_of_adoption")
 post_save.connect(log_it, sender = PersonAdoptPractice)
+pre_delete.connect(delete_it, sender = PersonAdoptPractice)
 
 class PersonMeetingAttendance(models.Model):
     id = BigAutoField(primary_key = True)
@@ -923,6 +964,7 @@ pre_delete.connect(Video.update_viewer_count, sender = PersonMeetingAttendance)
 pre_save.connect(Person.date_of_joining_handler, sender = PersonMeetingAttendance)
 pre_save.connect(Video.update_viewer_count, sender = PersonMeetingAttendance)
 post_save.connect(log_it, sender = PersonMeetingAttendance)
+pre_delete.connect(delete_it, sender = PersonMeetingAttendance)
 
 class Equipment(models.Model):
     id = BigAutoField(primary_key = True)
