@@ -13,7 +13,7 @@ types = string_response.split('fields')
 ids_to_delete = []
 for i in range(len(types)-1):
     ids_to_delete.append(types[i+1].partition('_id": "')[2].partition('"}')[0])
-
+print ids_to_delete
 if len(ids_to_delete) == 0:
     print "Nothing to delete"
 else:    
