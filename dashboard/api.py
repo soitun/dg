@@ -4,10 +4,11 @@ from tastypie.authentication import BasicAuthentication
 from tastypie.authorization import DjangoAuthorization
 from tastypie.resources import ModelResource, ALL, ALL_WITH_RELATIONS
 from tastypie.validation import FormValidation
+from tastypie.validation import Validation
 from functools import partial
 from dashboard.models import Country, State, District, Block, Village, FieldOfficer,Partners, \
-                Video, PersonGroups, Screening, Animator, Person, PersonAdoptPractice, UserPermission
-from forms import  PersonForm
+                Video, PersonGroups, Screening, Animator, Person, PersonAdoptPractice, UserPermission, Language, PersonMeetingAttendance
+from forms import  VideoForm, PersonForm, AnimatorForm, PersonGroupsForm, ScreeningForm
 from django.forms.models import model_to_dict
 from django.db import models
 from django.forms.models import ModelChoiceField
@@ -86,20 +87,36 @@ def foreign_key_to_id(bundle, field_name,sub_field_names):
     return dict
 
 def get_user_villages(request):
+    if request:
+        user_permissions = UserPermission.objects.filter(username = request.user)
+        villages = Village.objects.none()
+        for user_permission in user_permissions:
+            if(user_permission.role=='A'):
+                villages = villages | Village.objects.all()
+            if(user_permission.role=='D'):
+                states = State.objects.filter(region = user_permission.region_operated)
+                districts = District.objects.filter(state__in = states)
+                blocks = Block.objects.filter(district__in = districts)
+                villages = villages | Village.objects.filter(block__in = blocks)
+            if(user_permission.role=='F'):
+                blocks = Block.objects.filter(district = user_permission.district_operated)
+                villages = villages | Village.objects.filter(block__in = blocks)
+        return villages
+
+#Get User Districts for video download purpose
+
+def get_user_districts(request):
     user_permissions = UserPermission.objects.filter(username = request.user)
-    villages = Village.objects.none()
+    districts = District.objects.none()
     for user_permission in user_permissions:
         if(user_permission.role=='A'):
-            villages = villages | Village.objects.all()
+            districts = districts | District.objects.all()
         if(user_permission.role=='D'):
             states = State.objects.filter(region = user_permission.region_operated)
-            districts = District.objects.filter(state__in = states)
-            blocks = Block.objects.filter(district__in = districts)
-            villages = villages | Village.objects.filter(block__in = blocks)
+            districts = districts | District.objects.filter(state__in = states)
         if(user_permission.role=='F'):
-            blocks = Block.objects.filter(district = user_permission.district_operated)
-            villages = villages | Village.objects.filter(block__in = blocks)
-    return villages
+            districts = District.objects.filter(district_name = user_permission.district_operated)
+    return districts
 
 
 class VillageLevelAuthorization(DjangoAuthorization):
@@ -115,22 +132,36 @@ class VillageLevelAuthorization(DjangoAuthorization):
         return object_list.filter(**kwargs)
 
 
-class AnimatorResource(ModelResource):
-    village = fields.ForeignKey('dashboard.api.VillageResource', 'village')
+class MediatorResource(ModelResource):
+    mediator_label = fields.CharField()
+    assigned_villages = fields.ToManyField('dashboard.api.VillageResource', 'assigned_villages')
+    #village = fields.ForeignKey('dashboard.api.VillageResource', 'village')
     #    village_name = fields.CharField('village__village_name')
     #    village_id = fields.CharField('village__id')
-    partner = fields.ForeignKey('dashboard.api.PersonResource', 'partner')
+    #partner = fields.ForeignKey('dashboard.api.PersonResource', 'partner')
     #    partner_name = fields.CharField('partner__partner_name')
     #    partner_id = fields.CharField('partner__id')
     
     class Meta:
-        queryset = Animator.objects.select_related('village','partner').all()
-        resource_name = 'animator'
+        queryset = Animator.objects.all()
+        resource_name = 'mediator'
         authentication = BasicAuthentication()
         authorization = VillageLevelAuthorization('village__in')
-    dehydrate_village = partial(foreign_key_to_id, field_name='village',sub_field_names=['id','village_name'])
-    dehydrate_partner = partial(foreign_key_to_id, field_name='partner',sub_field_names=['id','partner_name'])
-
+        validation = ModelFormValidation(form_class=AnimatorForm)
+    dehydrate_assigned_villages = partial(many_to_many_to_subfield, field_name='assigned_villages',sub_field_names=['id', 'village_name'])
+    #dehydrate_partner = partial(foreign_key_to_id, field_name='partner',sub_field_names=['id','partner_name'])
+    #dehydrate_assigned_villages_ids = partial(many_to_many_to_subfield, field_name='assigned_villages',sub_field_names=['id'])
+    #dehydrate_assigned_villages_names = partial(many_to_many_to_subfield, field_name='assigned_villages',sub_field_names=['name'])
+    
+    
+    def dehydrate_mediator_label(self,bundle):
+        #for sending out label incase of dropdowns
+        v_field = getattr(bundle.obj, 'assigned_villages').all().distinct()
+        label = ""
+        for i in v_field:
+            label = label + i.village_name + ","
+        return "("+ label +")"
+    
 
 class VillageResource(ModelResource):
     # nandini: add the fields which have been chosen. so that if we want a field to come through the api we have to add it here.
@@ -139,7 +170,7 @@ class VillageResource(ModelResource):
     district_name= fields.CharField('block__district__district_name')
     state_name = fields.CharField('block__district__state__state_name')
     country_name = fields.CharField('block__district__state__country__country_name')
-    animators = fields.ToManyField(AnimatorResource, 'animators')
+    animators = fields.ToManyField(MediatorResource, 'animators')
     dehydrate_animators = partial(many_to_many_to_subfield, field_name='animators',sub_field_names=['id','name'])
     
     class Meta:
@@ -151,61 +182,213 @@ class VillageResource(ModelResource):
 
 class VideoResource(ModelResource):
     village = fields.ForeignKey(VillageResource, 'village')
+    cameraoperator = fields.ForeignKey(MediatorResource, 'cameraoperator')
+    facilitator = fields.ForeignKey(MediatorResource, 'facilitator')
+    farmers_shown = fields.ToManyField('dashboard.api.PersonResource', 'farmers_shown')
+    language = fields.ForeignKey('dashboard.api.LanguageResource', 'language')
     dehydrate_village = partial(foreign_key_to_id, field_name='village', sub_field_names=['id','village_name'])
+    #dehydrate_farmers_shown = partial(many_to_many_to_subfield, field_name='farmers_shown',sub_field_names=['id','person_name'])
     
     class Meta:
         queryset = Video.objects.select_related('village').all()
         resource_name = 'video'
         authentication = BasicAuthentication()
         authorization = DjangoAuthorization()
+        validation = ModelFormValidation(form_class=VideoForm)
+    
+    #def save_m2m(self, bundle):
+    #    return
+    
     
     def apply_authorization_limits(self, request, object_list):
-        villages = get_user_villages(request)
-        vids = list(Screening.objects.filter(village__in=villages).values_list('videoes_screened__id',flat=True))
-        # nandini: show videos which have been produced in this district
-        return object_list.filter(id__in= vids )
+        districts = get_user_districts(request)
+        screened_vids = list(Screening.objects.filter(village__block__district__in=districts).distinct().values_list('videoes_screened__id',flat=True))
+        produced_vids = list(Video.objects.filter(village__block__district__in = districts).values_list('id', flat=True))
+        #doing set of two lists avoid merging duplicates in the final merged list
+        vids = list(set(screened_vids + produced_vids))
+        return object_list.filter(id__in= vids)
 
 
 class PersonGroupsResource(ModelResource):
     village = fields.ForeignKey(VillageResource, 'village')
-#    village_name = fields.CharField('village__village_name')
-#    village_id = fields.CharField('village__id')
+    group_label = fields.CharField()
     class Meta:
         queryset = PersonGroups.objects.select_related('village').all()
         resource_name = 'group'
         authentication = BasicAuthentication()
         authorization = VillageLevelAuthorization('village__in')
-    dehydrate_village = partial(foreign_key_to_id, field_name='village',sub_field_names=['id','village_name'])
+        validation = ModelFormValidation(form_class=PersonGroupsForm)
+    dehydrate_village = partial(foreign_key_to_id, field_name='village',sub_field_names=['id'])
+    
+    def dehydrate_group_label(self,bundle):
+        #for sending out label incase of dropdowns
+        v_field = getattr(bundle.obj, 'village').village_name
+        g_field = getattr(bundle.obj, 'group_name')
+        return "("+ g_field+"," + v_field +")"
 
 
 class ScreeningResource(ModelResource):
     village = fields.ForeignKey(VillageResource, 'village')
+    animator = fields.ForeignKey(MediatorResource, 'animator')
 #    village_name = fields.CharField('village__village_name')
 #    village_id = fields.CharField('village__id')
-    videos_screened = fields.ToManyField(VideoResource, 'videoes_screened', related_name='screening')
-    person_groups = fields.ToManyField(PersonGroupsResource, 'farmer_groups_targeted', related_name='screening')
-    person_attendance = fields.ToManyField('dashboard.api.PersonResource', 'farmers_attendance', related_name='screening')
-    #field_officer = fields.CharField('fieldofficer__name')
+    videoes_screened = fields.ToManyField('dashboard.api.VideoResource', 'videoes_screened', related_name='screening')
+    farmer_groups_targeted = fields.ToManyField('dashboard.api.PersonGroupsResource', 'farmer_groups_targeted', related_name='screening')
+    farmers_attendance = fields.ToManyField('dashboard.api.PersonResource', 'farmers_attendance', related_name='screening')
+#    #field_officer = fields.CharField('fieldofficer__name')
     dehydrate_village = partial(foreign_key_to_id, field_name='village',sub_field_names=['id','village_name'])
-    dehydrate_videos_screened = partial(many_to_many_to_subfield, field_name='videoes_screened',sub_field_names=['id','title'])
-    dehydrate_person_groups = partial(many_to_many_to_subfield, field_name='farmer_groups_targeted',sub_field_names=['id','group_name'])
-    dehydrate_person_attendance = partial(many_to_many_to_subfield, field_name='farmers_attendance',sub_field_names=['id'])
+#    dehydrate_animator = partial(foreign_key_to_id, field_name='animator',sub_field_names=['id','name'])
+#    dehydrate_videoes_screened = partial(many_to_many_to_subfield, field_name='videoes_screened',sub_field_names=['id','title'])
+#    dehydrate_farmer_groups_targeted = partial(many_to_many_to_subfield, field_name='farmer_groups_targeted',sub_field_names=['id','group_name'])
+#    dehydrate_farmers_attendance = partial(many_to_many_to_subfield, field_name='farmers_attendance',sub_field_names=['personmeetingattendance__id',
+#                                                                                                                     'id', 
+#                                                                                                                     'person_name',
+#                                                                                                                     'personmeetingattendance__interested',
+#                                                                                                                     'personmeetingattendance__expressed_question',
+#                                                                                                                     'personmeetingattendance__expressed_adoption_video'])
 
     class Meta:
         queryset = Screening.objects.select_related('village').all()
         resource_name = 'screening'
         authentication = BasicAuthentication()
         authorization = VillageLevelAuthorization('village__in')
-
-class PersonResource(ModelResource):
-    village = fields.ForeignKey(VillageResource, 'village')
-#    village_name = fields.CharField('village__village_name')
-#    village_id = fields.CharField('village__id')
-    group = fields.ForeignKey(PersonGroupsResource, 'group',null=True)
-    #person_group_name = fields.CharField('group__group_name')
-    #person_group_id = fields.CharField('group__id')
-    screenings_attended = fields.ToManyField(ScreeningResource, 'screenings_attended', related_name='person', null=True)
+        #validation = ModelFormValidation(form_class = ScreeningForm)
     
+    def hydrate_videoes_screened(self, bundle):
+        groups = bundle.data.get('videoes_screened')
+        resource_uri_list = []
+        for group in groups:
+            try:
+                resource_uri_list.append("/api/v1/video/"+str(group.get('id'))+"/")
+            except:
+                continue
+                print 'in exception'
+        bundle.data['videoes_screened'] = resource_uri_list
+        return bundle
+    
+    def hydrate_farmer_groups_targeted(self, bundle):
+        print 'in hydrate groups'
+        groups = bundle.data.get('farmer_groups_targeted')
+        resource_uri_list = []
+        for group in groups:
+            try:
+                resource_uri_list.append("/api/v1/group/"+str(group.get('id'))+"/")
+            except:
+                continue
+                print 'in exception'
+        bundle.data['farmer_groups_targeted'] = resource_uri_list
+        return bundle
+    
+    def hydrate_farmers_attendance(self, bundle):
+        print 'in farmers attendance'
+        pmas = bundle.data['farmers_attendance']
+        resource_uri_list = []
+        for pma in pmas:
+            #print pma
+            try:
+                resource_uri_list.append("/api/v1/person/"+str(pma.get('id'))+"/")
+            except:
+                continue
+                print 'in exception'
+        bundle.data['farmers_attendance'] = resource_uri_list
+        print resource_uri_list
+        return bundle
+    
+    def save_m2m(self, bundle):
+        print 'in save m2m'
+        pmas = bundle.data.get('farmers_attendance', [])
+        print pmas
+
+    
+    def hydrate_village(self, bundle):
+        village = bundle.data.get('village')
+        if village:
+            village_id = village.get('id')
+            village_resource_uri = "/api/v1/village/"+str(village_id)+"/"
+            bundle.data['village'] = village_resource_uri
+        return bundle
+    
+    def hydrate_animator(self, bundle):
+        animator = bundle.data.get('animator')
+        if animator:
+            animator_id = animator.get('id')
+            animator_resource_uri = "/api/v1/mediator/"+str(animator_id)+"/"
+            bundle.data['animator'] = animator_resource_uri
+        return bundle
+        
+
+
+#    def save_m2m(self, bundle):
+#        for field_name, field_object in self.fields.items():
+#            print field_name
+#            print field_object
+#            if not getattr(field_object, 'is_m2m', False):
+#                continue
+#            print "m2m"
+#            if not field_object.attribute:
+#                continue
+#              
+#            if field_object.blank:
+#                continue
+#            
+#            if field_object.readonly:
+#                continue
+# 
+#            # Get the manager.
+#            related_mngr = getattr(bundle.obj, field_object.attribute)
+#            through_class = getattr(related_mngr, 'through', None)
+#            print related_mngr, through_class
+##            if through_class and not through_class._meta.auto_created:
+##                # ManyToMany with an explicit intermediary table.
+##                # This should be handled by with specific code, so continue
+##                # without modifying anything. 
+##                # NOTE: this leaves the bundle.needs_save set to True
+##                continue
+##            
+#            print "notautocreated"
+# 
+#            related_bundles = bundle.data[field_name]
+#            print related_bundles
+##            # Remove any relations that were not POSTed
+##            if through_class:
+##                # ManyToMany with hidden intermediary table. 
+##                # Use the manager to clear out the relations.
+##                related_mngr.clear()
+##            else:
+##                # OneToMany with foreign keys to this object. 
+##                # Explicitly delete objects to pass in the user.
+##                posted_pks = [b.obj.pk for b in related_bundles if b.obj.pk]
+##                if self._meta.pass_request_user_to_django:
+##                    for obj in related_mngr.for_user(
+##                        user=bundle.request.user).exclude(pk__in=posted_pks):
+##                        obj.delete(user=bundle.request.user)
+##                else:
+##                    for obj in related_mngr.all().exclude(pk__in=posted_pks):
+##                        obj.delete()
+##            
+##            # Save the posted related objects
+#            related_objs = []
+#            for related_bundle in related_bundles:
+#                print related_bundle.obj
+##                related_objs.append(related_bundle.obj)
+##                if related_bundle.needs_save:
+##                    if self._meta.pass_request_user_to_django:
+##                        related_bundle.obj.save(user=bundle.request.user)
+##                    else:
+##                        related_bundle.obj.save()
+##                    related_bundle.needs_save = False
+##            
+##            if through_class:
+##                # ManyToMany with hidden intermediary table. Since the save
+##                # method on a hidden table can not be overridden we can use the
+##                # related_mngr to add.
+##                related_mngr.add(*related_objs)
+##        print 'here'
+class PersonResource(ModelResource):
+    label = fields.CharField()
+    village = fields.ForeignKey(VillageResource, 'village')
+    group = fields.ForeignKey(PersonGroupsResource, 'group',null=True)
+    videos_watched = fields.DictField(null=True)
     class Meta:
         queryset = Person.objects.select_related('village','group').all()
         resource_name = 'person'
@@ -213,11 +396,20 @@ class PersonResource(ModelResource):
         authorization = VillageLevelAuthorization('village__in')
         validation = ModelFormValidation(form_class = PersonForm)
         always_return_data = True
-    dehydrate_village = partial(foreign_key_to_id, field_name='village',sub_field_names=['id','village_name'])
+    dehydrate_village = partial(foreign_key_to_id, field_name='village',sub_field_names=['id'])
     dehydrate_group = partial(foreign_key_to_id, field_name='group',sub_field_names=['id','group_name'])
-    dehydrate_screenings_attended = partial(many_to_many_to_subfield, field_name='screenings_attended',sub_field_names=['id'])
-    def save_m2m(self, bundle):
-        return
+    
+    def dehydrate_label(self,bundle):
+        #for sending out label incase of dropdowns
+        v_field = getattr(bundle.obj, 'village').village_name
+        f_field = getattr(bundle.obj, 'father_name')
+        p_field = getattr(bundle.obj, 'person_name')
+        return p_field+"("+v_field+","+f_field+")"
+    
+    def dehydrate_videos_watched(self, bundle):
+        person_id = getattr(bundle.obj, 'id')
+        videos = Person.objects.filter(pk=person_id).values('screening__videoes_screened__id', 'screening__videoes_screened__title').distinct()
+        return videos
         
 class PersonAdoptVideoResource(ModelResource):
     person = fields.ForeignKey(PersonResource, 'person')
@@ -266,4 +458,15 @@ class PartnersResource(ModelResource):
         resource_name = 'partner'
         authentication = BasicAuthentication()
 
+class LanguageResource(ModelResource):    
+    class Meta:
+        queryset = Language.objects.all()
+        resource_name = 'language'
+        authentication = BasicAuthentication()
+
+class PersonMeetingAttendanceResource(ModelResource):    
+    class Meta:
+        queryset = PersonMeetingAttendance.objects.all()
+        resource_name = 'pma'
+        authentication = BasicAuthentication()
 

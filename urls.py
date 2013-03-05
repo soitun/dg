@@ -267,6 +267,7 @@ urlpatterns = patterns('',
     (r'^analytics/video/?$',video_analytics.video),
     (r'^path/page/?$',page),
     (r'^path/update/?$',update),
+    (r'^tastypie/post/?$',tastypie_post),
     (r'^fbconnect/', include('fbconnect.urls'))
 )
 

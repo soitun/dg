@@ -109,7 +109,7 @@ INSTALLED_APPS = (
     'farmerbook',
     'video_practice_map',
     'path',
-    'fbconnect'
+    'fbconnect',
     'tastypie'
    )
 
