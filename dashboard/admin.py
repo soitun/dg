@@ -15,7 +15,7 @@ from ajax_filtered_fields.forms import FilteredSelect
 # autocomplete widget
 import operator
 from django.db import models
-from django.contrib.auth.models import Message
+#from django.contrib.auth.models import Message
 from django.http import HttpResponse, HttpResponseNotFound
 from django.db.models.query import QuerySet
 from django.utils.encoding import smart_str
@@ -32,6 +32,7 @@ class FarmerAttendanceInline(admin.TabularInline):
     model = PersonMeetingAttendance
     raw_id_fields = ("person",)
     extra = 0
+
 
 class ScreeningForm(forms.ModelForm):
     class DynamicChoiceField(forms.ChoiceField):
@@ -59,8 +60,8 @@ class ScreeningForm(forms.ModelForm):
         model = Screening
 
 class ScreeningAdmin(admin.ModelAdmin):
-    fields = ('date','start_time','end_time','location','village','animator','videoes_screened','target_person_attendance','target_audience_interest','target_adoptions','fieldofficer','farmer_groups_targeted')
-    inlines = [FarmerAttendanceInline]
+    fields = ('date','start_time','end_time','location','village','animator','target_person_attendance','target_audience_interest','farmer_groups_targeted','videoes_screened','target_adoptions','fieldofficer',)
+    inlines = [FarmerAttendanceInline,]
     filter_horizontal = ('videoes_screened',)
     list_display = ('date', 'village', 'location')
     search_fields = ['village__village_name']

@@ -30,6 +30,10 @@ def melissaho(request):
    
     return render_to_response('mellisaho.html')
 
+def eric(request):
+   
+    return render_to_response('eric.html')
+
 def aishwaryaratan(request):
    
     return render_to_response('aishwaryaratan.html')
@@ -220,6 +224,14 @@ def careerrse(request):
 def careeradm(request):
     
     return render_to_response('base_career_adm.html')
+
+def careerpca(request):
+    
+    return render_to_response('base_career_pca.html')
+
+def careerpma(request):
+    
+    return render_to_response('base_career_pma.html')
 
 def donate(request):
     

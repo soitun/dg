@@ -22,6 +22,15 @@ from dashboard.models import *
 from output.database.utility import run_query, run_query_dict
 from forms import *
 from filter_utils import filter_objects_for_date
+# #########
+# REVERT WHEN MOVING TO DJANGO 1.4
+# The fix converts all bound fields inside a form object to str. This is so that HttpResponse.get_content does not throw the exception "sequence item 0: expected string, BoundField found".According to the Django 1.3 docs, content can be an iterator or a string. If it's an iterator, it should return strings, and those strings will be joined together to form the content of the response.
+# This must be reverted so that there is no duplicate processing in Django 1.4 since Django 1.4 handles this scenario.
+# Steps: 
+# Remove str_form = [str(item) for item in form]
+#                    return HttpResponse(str_form)
+# Uncomment return HttpResponse(form)
+# #########
 
 def search(request):
     """
@@ -69,7 +78,7 @@ def test_gwt(request, region_id):
     if request.method == 'POST':
         form = RegionTestForm(request.POST)
         if form.is_valid():
-            new_form  = form.save(commit=False)
+            new_form  = form.save( user = request.session.get('user_id'), id = id, commit=False)
             new_form.id = request.POST['id']
             new_form.save()
             return HttpResponse("Success")
@@ -311,7 +320,7 @@ def save_country_online(request,id):
         else:
             form  = CountryForm(request.POST)
         if form.is_valid():
-            form.save()
+            form.save(user = request.session.get('user_id'), id = id)
             return HttpResponse('')
         else:
             return HttpResponse(form.errors.as_text(),status = 201)
@@ -321,7 +330,10 @@ def save_country_online(request,id):
             form = CountryForm(instance = country)
         else:
             form  = CountryForm()
-        return HttpResponse(form)
+        # REVERT WHEN MOVING TO DJANGO 1.4
+        uni_form = [unicode(item) for item in form]
+        return HttpResponse(uni_form)
+        #return HttpResponse(form)
 
 def get_countries_online(request, offset, limit):
     if request.method == 'POST':
@@ -343,7 +355,7 @@ def save_country_offline(request, id):
         if(not id):
             form = CountryForm(request.POST)
             if form.is_valid():
-                new_form  = form.save(commit=False)
+                new_form  = form.save( user = request.session.get('user_id'), id = id, commit=False)
                 new_form.id = request.POST['id']
                 new_form.save()
                 return HttpResponse("1")
@@ -353,7 +365,7 @@ def save_country_offline(request, id):
             country = Country.objects.get(id=id)
             form = CountryForm(request.POST, instance = country)
             if form.is_valid():
-                form.save()
+                form.save(user = request.session.get('user_id'), id = id)
                 return HttpResponse("1")
             else:
                 return HttpResponse("0")
@@ -366,7 +378,7 @@ def save_region_online(request,id):
         else:
             form  = RegionForm(request.POST)
         if form.is_valid():
-            form.save()
+            form.save(user = request.session.get('user_id'), id = id)
             return HttpResponse('')
         else:
             return HttpResponse(form.errors.as_text(),status = 201)
@@ -376,7 +388,10 @@ def save_region_online(request,id):
             form = RegionForm(instance = region)
         else:
             form  = RegionForm()
-        return HttpResponse(form)
+        # REVERT WHEN MOVING TO DJANGO 1.4
+        uni_form = [unicode(item) for item in form]
+        return HttpResponse(uni_form)
+        #return HttpResponse(form)
 
 def get_regions_online(request, offset, limit):
     if request.method == 'POST':
@@ -398,7 +413,7 @@ def save_region_offline(request, id):
         if(not id):
             form = RegionForm(request.POST)
             if form.is_valid():
-                new_form  = form.save(commit=False)
+                new_form  = form.save( user = request.session.get('user_id'), id = id, commit=False)
                 new_form.id = request.POST['id']
                 new_form.save()
                 OfflineUser.objects.set_offline_pk(new_form.id)
@@ -409,7 +424,7 @@ def save_region_offline(request, id):
             region = Region.objects.get(id=id)
             form = RegionForm(request.POST, instance = region)
             if form.is_valid():
-                form.save()
+                form.save(user = request.session.get('user_id'), id = id)
                 return HttpResponse("1")
             else:
                 return HttpResponse("0")
@@ -422,7 +437,7 @@ def save_state_online(request,id):
         else:
             form  = StateForm(request.POST)
         if form.is_valid():
-            form.save()
+            form.save(user = request.session.get('user_id'), id = id)
             return HttpResponse('')
         else:
             return HttpResponse(form.errors.as_text(),status = 201)
@@ -432,7 +447,10 @@ def save_state_online(request,id):
             form = StateForm(instance = state)
         else:
             form  = StateForm()
-        return HttpResponse(form)
+        # REVERT WHEN MOVING TO DJANGO 1.4
+        uni_form = [unicode(item) for item in form]
+        return HttpResponse(uni_form)
+        #return HttpResponse(form)
 
 def get_states_online(request, offset, limit):
     if request.method == 'POST':
@@ -453,7 +471,7 @@ def save_state_offline(request, id):
         if(not id):
             form = StateForm(request.POST)
             if form.is_valid():
-                new_form  = form.save(commit=False)
+                new_form  = form.save( user = request.session.get('user_id'), id = id, commit=False)
                 new_form.id = request.POST['id']
                 new_form.save()
                 OfflineUser.objects.set_offline_pk(new_form.id)
@@ -464,7 +482,7 @@ def save_state_offline(request, id):
             state = State.objects.get(id=id)
             form = StateForm(request.POST, instance = state)
             if form.is_valid():
-                form.save()
+                form.save(user = request.session.get('user_id'), id = id)
                 return HttpResponse("1")
             else:
                 return HttpResponse("0")
@@ -478,7 +496,7 @@ def save_fieldofficer_online(request,id):
         else:
             form  = FieldOfficerForm(request.POST)
         if form.is_valid():
-            form.save()
+            form.save(user = request.session.get('user_id'), id = id)
             return HttpResponse('')
         else:
             return HttpResponse(form.errors.as_text(),status = 201)
@@ -488,7 +506,10 @@ def save_fieldofficer_online(request,id):
             form = FieldOfficerForm(instance = fieldofficer)
         else:
             form  = FieldOfficerForm()
-        return HttpResponse(form)
+        # REVERT WHEN MOVING TO DJANGO 1.4
+        uni_form = [unicode(item) for item in form]
+        return HttpResponse(uni_form)
+        #return HttpResponse(form)
 
 
 def get_fieldofficers_online(request, offset, limit ):
@@ -510,7 +531,7 @@ def save_fieldofficer_offline(request, id):
         if(not id):
             form = FieldOfficerForm(request.POST)
             if form.is_valid():
-                new_form  = form.save(commit=False)
+                new_form  = form.save( user = request.session.get('user_id'), id = id, commit=False)
                 new_form.id = request.POST['id']
                 new_form.save()
                 OfflineUser.objects.set_offline_pk(new_form.id)
@@ -521,7 +542,7 @@ def save_fieldofficer_offline(request, id):
             fieldofficer = FieldOfficer.objects.get(id=id)
             form = FieldOfficerForm(request.POST, instance = fieldofficer)
             if form.is_valid():
-                form.save()
+                form.save(user = request.session.get('user_id'), id = id)
                 return HttpResponse("1")
             else:
                 return HttpResponse("0")
@@ -535,7 +556,7 @@ def save_practice_online(request,id):
         else:
             form  = PracticeForm(request.POST)
         if form.is_valid():
-            form.save()
+            form.save(user = request.session.get('user_id'), id = id)
             return HttpResponse('')
         else:
             return HttpResponse(form.errors.as_text(),status = 201)
@@ -545,7 +566,10 @@ def save_practice_online(request,id):
             form = PracticeForm(instance = practice)
         else:
             form  = PracticeForm()
-        return HttpResponse(form)
+        # REVERT WHEN MOVING TO DJANGO 1.4
+        uni_form = [unicode(item) for item in form]
+        return HttpResponse(uni_form)
+        #return HttpResponse(form)
 
 def get_practices_online(request, offset, limit):
     if request.method == 'POST':
@@ -571,7 +595,7 @@ def save_practice_offline(request, id):
         if(not id):
             form = PracticeForm(request.POST)
             if form.is_valid():
-                new_form  = form.save(commit=False)
+                new_form  = form.save( user = request.session.get('user_id'), id = id, commit=False)
                 new_form.id = request.POST['id']
                 new_form.save()
                 OfflineUser.objects.set_offline_pk(new_form.id)
@@ -582,7 +606,7 @@ def save_practice_offline(request, id):
             practice = Practices.objects.get(id=id)
             form = PracticeForm(request.POST, instance = practice)
             if form.is_valid():
-                form.save()
+                form.save(user = request.session.get('user_id'), id = id)
                 return HttpResponse("1")
             else:
                 return HttpResponse("0")
@@ -607,7 +631,7 @@ def save_language_online(request,id):
         else:
             form  = LanguageForm(request.POST)
         if form.is_valid():
-            form.save()
+            form.save(user = request.session.get('user_id'), id = id)
             return HttpResponse('')
         else:
             return HttpResponse(form.errors.as_text(),status = 201)
@@ -617,7 +641,10 @@ def save_language_online(request,id):
             form = LanguageForm(instance = language)
         else:
             form  = LanguageForm()
-        return HttpResponse(form)
+        # REVERT WHEN MOVING TO DJANGO 1.4
+        uni_form = [unicode(item) for item in form]
+        return HttpResponse(uni_form)
+        #return HttpResponse(form)
 
 def get_languages_online(request, offset, limit):
     if request.method == 'POST':
@@ -638,7 +665,7 @@ def save_language_offline(request,id):
         if(not id):
             form = LanguageForm(request.POST)
             if form.is_valid():
-                new_form  = form.save(commit=False)
+                new_form  = form.save( user = request.session.get('user_id'), id = id, commit=False)
                 new_form.id = request.POST['id']
                 new_form.save()
                 OfflineUser.objects.set_offline_pk(new_form.id)
@@ -649,7 +676,7 @@ def save_language_offline(request,id):
             language = Language.objects.get(id=id)
             form = LanguageForm(request.POST, instance = language)
             if form.is_valid():
-                form.save()
+                form.save(user = request.session.get('user_id'), id = id)
                 return HttpResponse("1")
             else:
                 return HttpResponse("0")
@@ -662,7 +689,7 @@ def save_partner_online(request,id):
         else:
             form  = PartnerForm(request.POST)
         if form.is_valid():
-            form.save()
+            form.save(user = request.session.get('user_id'), id = id)
             return HttpResponse('')
         else:
             return HttpResponse(form.errors.as_text(),status = 201)
@@ -672,7 +699,10 @@ def save_partner_online(request,id):
             form = PartnerForm(instance = partner)
         else:
             form  = PartnerForm()
-        return HttpResponse(form)
+        # REVERT WHEN MOVING TO DJANGO 1.4
+        uni_form = [unicode(item) for item in form]
+        return HttpResponse(uni_form)
+        #return HttpResponse(form)
 
 def get_partners_online(request, offset, limit):
     if request.method == 'POST':
@@ -693,7 +723,7 @@ def save_partner_offline(request, id):
         if(not id):
             form = PartnerForm(request.POST)
             if form.is_valid():
-                new_form  = form.save(commit=False)
+                new_form  = form.save( user = request.session.get('user_id'), id = id, commit=False)
                 new_form.id = request.POST['id']
                 new_form.save()
                 OfflineUser.objects.set_offline_pk(new_form.id)
@@ -704,7 +734,7 @@ def save_partner_offline(request, id):
             partner = Partners.objects.get(id=id)
             form = PartnerForm(request.POST, instance = partner)
             if form.is_valid():
-                form.save()
+                form.save(user = request.session.get('user_id'), id = id)
                 return HttpResponse("1")
             else:
                 return HttpResponse("0")
@@ -717,7 +747,7 @@ def save_video_online(request,id):
         else:
             form = VideoForm(request.POST)
         if form.is_valid():
-            form.save()
+            form.save(user = request.session.get('user_id'), id = id)
             return HttpResponse('')
         else:
             return HttpResponse(form.errors.as_text(), status=201)
@@ -731,10 +761,12 @@ def save_video_online(request,id):
         form.fields['village'].queryset = villages.order_by('village_name')
         form.fields['facilitator'].queryset = Animator.objects.filter(assigned_villages__in = villages).distinct().order_by('name')
         form.fields['cameraoperator'].queryset = Animator.objects.filter(assigned_villages__in = villages).distinct().order_by('name')
-        form.fields['related_practice'].queryset = Practices.objects.distinct().order_by('practice_sector__name')
         form.fields['farmers_shown'].queryset = Person.objects.filter(village__in = villages).distinct().order_by('person_name')
         form.fields['supplementary_video_produced'].queryset = Video.objects.filter(village__in = villages).distinct().order_by('title')
-        return HttpResponse(form)
+        # REVERT WHEN MOVING TO DJANGO 1.4
+        uni_form = [unicode(item) for item in form]
+        return HttpResponse(uni_form)
+        #return HttpResponse(form)
 
 def get_videos_online(request, offset, limit):
     if request.method == 'POST':
@@ -776,7 +808,7 @@ def save_video_offline(request, id):
         if(not id):
             form = VideoForm(request.POST)
             if form.is_valid():
-                new_form  = form.save(commit=False)
+                new_form  = form.save( user = request.session.get('user_id'), id = id, commit=False)
                 new_form.id = request.POST['id']
                 new_form.save()
                 form.save_m2m()
@@ -787,7 +819,7 @@ def save_video_offline(request, id):
             video = Video.objects.get(id=id)
             form = VideoForm(request.POST, instance = video)
             if form.is_valid():
-                form.save()
+                form.save(user = request.session.get('user_id'), id = id)
                 return HttpResponse("1")
             else:
                 return HttpResponse("0")
@@ -801,7 +833,7 @@ def save_personshowninvideo_online(request,id):
         else:
             form = PersonShownInVideoForm(request.POST)
         if form.is_valid():
-            form.save()
+            form.save(user = request.session.get('user_id'), id = id)
             return HttpResponse('')
         else:
             return HttpResponse(form.errors.as_text(), status=201)
@@ -814,7 +846,10 @@ def save_personshowninvideo_online(request,id):
         villages = get_user_villages(request)
         form.fields['video'].queryset = Video.objects.filter(village__in = villages).distinct().order_by('title')
         form.fields['person'].queryset = Person.objects.distinct().order_by('person_name')
-        return HttpResponse(form)
+        # REVERT WHEN MOVING TO DJANGO 1.4
+        uni_form = [unicode(item) for item in form]
+        return HttpResponse(uni_form)
+        #return HttpResponse(form)
 
 def get_personshowninvideo_online(request, offset, limit):
     if request.method == 'POST':
@@ -834,7 +869,7 @@ def save_personshowninvideo_offline(request, id):
         if(not id):
             form = PersonShownInVideoForm(request.POST)
             if form.is_valid():
-                new_form  = form.save(commit=False)
+                new_form  = form.save( user = request.session.get('user_id'), id = id, commit=False)
                 new_form.id = request.POST['id']
                 new_form.save()
                 OfflineUser.objects.set_offline_pk(new_form.id)
@@ -845,7 +880,7 @@ def save_personshowninvideo_offline(request, id):
             personshowninvideo = PersonShownInVideo.objects.get(id=id)
             form = PersonShownInVideoForm(request.POST, instance = personshowninvideo)
             if form.is_valid():
-                form.save()
+                form.save(user = request.session.get('user_id'), id = id)
                 return HttpResponse("1")
             else:
                 return HttpResponse("0")
@@ -859,7 +894,7 @@ def save_district_online(request,id):
         else:
             form  = DistrictForm(request.POST)
         if form.is_valid():
-            form.save()
+            form.save(user = request.session.get('user_id'), id = id)
             return HttpResponse('')
         else:
             return HttpResponse(form.errors.as_text(),status = 201)
@@ -869,7 +904,10 @@ def save_district_online(request,id):
             form = DistrictForm(instance = district)
         else:
             form  = DistrictForm()
-        return HttpResponse(form)
+        # REVERT WHEN MOVING TO DJANGO 1.4
+        uni_form = [unicode(item) for item in form]
+        return HttpResponse(uni_form)
+        #return HttpResponse(form)
 
 def get_districts_online(request, offset, limit):
     if request.method == 'POST':
@@ -891,7 +929,7 @@ def save_district_offline(request, id):
         if(not id):
             form = DistrictForm(request.POST)
             if form.is_valid():
-                new_form  = form.save(commit=False)
+                new_form  = form.save( user = request.session.get('user_id'), id = id, commit=False)
                 new_form.id = request.POST['id']
                 new_form.save()
                 OfflineUser.objects.set_offline_pk(new_form.id)
@@ -902,7 +940,7 @@ def save_district_offline(request, id):
             district = District.objects.get(id=id)
             form = DistrictForm(request.POST, instance = district)
             if form.is_valid():
-                form.save()
+                form.save(user = request.session.get('user_id'), id = id)
                 return HttpResponse("1")
             else:
                 return HttpResponse("0")
@@ -916,7 +954,7 @@ def save_block_online(request,id):
         else:
             form  = BlockForm(request.POST)
         if form.is_valid():
-            form.save()
+            form.save(user = request.session.get('user_id'), id = id)
             return HttpResponse('')
         else:
             return HttpResponse(form.errors.as_text(),status = 201)
@@ -928,7 +966,10 @@ def save_block_online(request,id):
             form = BlockForm()
         districts = get_user_districts(request)
         form.fields['district'].queryset = districts.order_by('district_name')
-        return HttpResponse(form)
+        # REVERT WHEN MOVING TO DJANGO 1.4
+        uni_form = [unicode(item) for item in form]
+        return HttpResponse(uni_form)
+        #return HttpResponse(form)
 
 def get_blocks_online(request, offset, limit):
     if request.method == 'POST':
@@ -969,7 +1010,7 @@ def save_block_offline(request, id):
         if(not id):
             form = BlockForm(request.POST)
             if form.is_valid():
-                new_form  = form.save(commit=False)
+                new_form  = form.save( user = request.session.get('user_id'), id = id, commit=False)
                 new_form.id = request.POST['id']
                 new_form.save()
                 OfflineUser.objects.set_offline_pk(new_form.id)
@@ -980,7 +1021,7 @@ def save_block_offline(request, id):
             block = Block.objects.get(id=id)
             form = BlockForm(request.POST, instance = block)
             if form.is_valid():
-                form.save()
+                form.save(user = request.session.get('user_id'), id = id)
                 return HttpResponse("1")
             else:
                 return HttpResponse("0")
@@ -994,7 +1035,7 @@ def save_developmentmanager_online(request,id):
         else:
             form  = DevelopmentManagerForm(request.POST)
         if form.is_valid():
-            form.save()
+            form.save(user = request.session.get('user_id'), id = id)
             return HttpResponse('')
         else:
             return HttpResponse(form.errors.as_text(),status = 201)
@@ -1004,7 +1045,10 @@ def save_developmentmanager_online(request,id):
             form = DevelopmentManagerForm(instance = developmentmanager)
         else:
             form  = DevelopmentManagerForm()
-        return HttpResponse(form)
+        # REVERT WHEN MOVING TO DJANGO 1.4
+        uni_form = [unicode(item) for item in form]
+        return HttpResponse(uni_form)
+        #return HttpResponse(form)
 
 def get_developmentmanagers_online(request, offset, limit):
     if request.method == 'POST':
@@ -1025,7 +1069,7 @@ def save_developmentmanager_offline(request, id):
         if(not id):
             form = DevelopmentManagerForm(request.POST)
             if form.is_valid():
-                new_form  = form.save(commit=False)
+                new_form  = form.save( user = request.session.get('user_id'), id = id, commit=False)
                 new_form.id = request.POST['id']
                 new_form.save()
                 OfflineUser.objects.set_offline_pk(new_form.id)
@@ -1036,7 +1080,7 @@ def save_developmentmanager_offline(request, id):
             developmentmanager = DevelopmentManager.objects.get(id=id)
             form = DevelopmentManagerForm(request.POST, instance = developmentmanager)
             if form.is_valid():
-                form.save()
+                form.save(user = request.session.get('user_id'), id = id)
                 return HttpResponse("1")
             else:
                 return HttpResponse("0")
@@ -1050,7 +1094,7 @@ def save_equipment_online(request,id):
         else:
             form  = EquipmentForm(request.POST)
         if form.is_valid():
-            form.save()
+            form.save(user = request.session.get('user_id'), id = id)
             return HttpResponse('')
         else:
             return HttpResponse(form.errors.as_text(),status = 201)
@@ -1063,7 +1107,10 @@ def save_equipment_online(request,id):
         villages = get_user_villages(request)
         form.fields['village'].queryset = villages.order_by('village_name')
         
-        return HttpResponse(form)
+        # REVERT WHEN MOVING TO DJANGO 1.4
+        uni_form = [unicode(item) for item in form]
+        return HttpResponse(uni_form)
+        #return HttpResponse(form)
 
 
 def get_equipments_online(request, offset, limit):
@@ -1095,7 +1142,7 @@ def save_equipment_offline(request, id):
         if(not id):
             form = EquipmentForm(request.POST)
             if form.is_valid():
-                new_form  = form.save(commit=False)
+                new_form  = form.save( user = request.session.get('user_id'), id = id, commit=False)
                 new_form.id = request.POST['id']
                 new_form.save()
                 OfflineUser.objects.set_offline_pk(new_form.id)
@@ -1106,7 +1153,7 @@ def save_equipment_offline(request, id):
             equipment = Equipment.objects.get(id=id)
             form = EquipmentForm(request.POST, instance = equipment)
             if form.is_valid():
-                form.save()
+                form.save(user = request.session.get('user_id'), id = id)
                 return HttpResponse("1")
             else:
                 return HttpResponse("0")
@@ -1125,12 +1172,14 @@ def save_village_online(request, id):
             formset_person_group = PersonGroupInlineFormSet(request.POST, request.FILES)
             formset_animator = AnimatorInlineFormSet(request.POST, request.FILES)
         if form.is_valid() and formset_person_group.is_valid() and formset_animator.is_valid():
-            saved_village = form.save()
+            saved_village = form.save(user = request.session.get('user_id'), id = id)
             village = Village.objects.get(pk=saved_village.id)
             formset_person_group = PersonGroupInlineFormSet(request.POST, request.FILES, instance=village)
+            group_instances = formset_person_group.save(commit = False)
+            save_all(group_instances, user = request.session.get('user_id'), id = id)
             formset_animator = AnimatorInlineFormSet(request.POST, request.FILES, instance=village)
-            formset_person_group.save()
-            formset_animator.save()
+            animator_instances = formset_animator.save(commit = False)
+            save_all(animator_instances, user = request.session.get('user_id'), id = id)
             return HttpResponse('')
         else:
             errors = form.errors.as_text()
@@ -1196,7 +1245,7 @@ def save_village_offline(request, id):
         if(not id):
             form = VillageForm(request.POST)
             if form.is_valid():
-                new_form  = form.save(commit=False)
+                new_form  = form.save(user = request.session.get('user_id'), id = id, commit=False)
                 new_form.id = request.POST['id']
                 new_form.save()
                 OfflineUser.objects.set_offline_pk(new_form.id)
@@ -1207,7 +1256,7 @@ def save_village_offline(request, id):
             village = Village.objects.get(id=id)
             form = VillageForm(request.POST, instance = village)
             if form.is_valid():
-                form.save()
+                form.save(user = request.session.get('user_id'), id = id)
                 return HttpResponse("1")
             else:
                 return HttpResponse("0")
@@ -1222,11 +1271,12 @@ def save_animator_online(request, id):
         else:
             form_animator = AnimatorForm(request.POST)
         if form_animator.is_valid():
-            saved_animator = form_animator.save()
+            saved_animator = form_animator.save(user = request.session.get('user_id'), id = id)
             animator = Animator.objects.get(pk=saved_animator.id)
             formset_animator_assigned_village = AnimatorAssignedVillageInlineFormSet(request.POST, request.FILES, instance=animator)
             if formset_animator_assigned_village.is_valid():
-                formset_animator_assigned_village.save()
+                animator_assigned_village_instances = formset_animator_assigned_village.save(commit = False)
+                save_all(animator_assigned_village_instances, user = request.session.get('user_id'), id = id)
                 return HttpResponse('')
             else:
                 errors = form_animator.errors.as_text()
@@ -1280,7 +1330,7 @@ def save_animator_offline(request, id):
         if(not id):
             form = AnimatorForm(request.POST)
             if form.is_valid():
-                new_form  = form.save(commit=False)
+                new_form  = form.save( user = request.session.get('user_id'), id = id, commit=False)
                 new_form.id = request.POST['id']
                 new_form.save()
                 OfflineUser.objects.set_offline_pk(new_form.id)
@@ -1291,7 +1341,7 @@ def save_animator_offline(request, id):
             animator = Animator.objects.get(id=id)
             form = AnimatorForm(request.POST, instance = animator)
             if form.is_valid():
-                form.save()
+                form.save(user = request.session.get('user_id'), id = id)
                 return HttpResponse("1")
             else:
                 return HttpResponse("0")
@@ -1304,7 +1354,7 @@ def save_animatorassignedvillage_online(request,id):
         else:
             form = AnimatorAssignedVillageForm(request.POST)
         if form.is_valid():
-            form.save()
+            form.save(user = request.session.get('user_id'), id = id)
             return HttpResponse('')
         else:
             return HttpResponse(form.errors.as_text(), status=201)
@@ -1317,7 +1367,10 @@ def save_animatorassignedvillage_online(request,id):
         villages = get_user_villages(request)
         form.fields['village'].queryset = villages.order_by('village_name')
         form.fields['animator'].queryset = Animator.objects.filter(village__in = villages).distinct().order_by('name')
-        return HttpResponse(form)
+        # REVERT WHEN MOVING TO DJANGO 1.4
+        uni_form = [unicode(item) for item in form]
+        return HttpResponse(uni_form)
+        #return HttpResponse(form)
 
 def get_animatorassignedvillages_online(request, offset, limit):
     if request.method == 'POST':
@@ -1349,7 +1402,7 @@ def save_animatorassignedvillage_offline(request, id):
         if(not id):
             form = AnimatorAssignedVillageForm(request.POST)
             if form.is_valid():
-                new_form  = form.save(commit=False)
+                new_form  = form.save( user = request.session.get('user_id'), id = id, commit=False)
                 new_form.id = request.POST['id']
                 new_form.save()
                 OfflineUser.objects.set_offline_pk(new_form.id)
@@ -1359,7 +1412,7 @@ def save_animatorassignedvillage_offline(request, id):
             animatorassignedvillage = AnimatorAssignedVillage.objects.get(id=id)
             form = AnimatorAssignedVillageForm(request.POST, instance = animatorassignedvillage)
             if form.is_valid():
-                form.save()
+                form.save(user = request.session.get('user_id'), id = id)
                 return HttpResponse("1")
             return HttpResponse("0")
 
@@ -1374,10 +1427,11 @@ def save_persongroup_online(request,id):
             form = PersonGroupsForm(request.POST)
             formset = PersonFormSet(request.POST, request.FILES)
         if form.is_valid() and formset.is_valid():
-            saved_persongroup = form.save()
+            saved_persongroup = form.save(user = request.session.get('user_id'), id = id)
             persongroup = PersonGroups.objects.get(pk=saved_persongroup.id)
             formset = PersonFormSet(request.POST, request.FILES, instance=persongroup)
-            formset.save()
+            person_instances = formset.save(commit=False)
+            save_all(person_instances, user = request.session.get('user_id'), id = id)
             return HttpResponse('')
         else:
             errors = form.errors.as_text()
@@ -1438,10 +1492,10 @@ def save_persongroup_offline(request, id):
         if(not id):
             form = PersonGroupsForm(request.POST)
             if form.is_valid():
-                new_form  = form.save(commit=False)
+                new_form  = form.save(user = request.session.get('user_id'), id = id, commit=False)
                 new_form.id = request.POST['id']
                 new_form.save()
-                OfflineUser.objects.set_offline_pk(new_form.id)
+                #OfflineUser.objects.set_offline_pk(new_form.id)
                 return HttpResponse("1")
             else:
                 return HttpResponse("0")
@@ -1449,7 +1503,7 @@ def save_persongroup_offline(request, id):
             persongroup = PersonGroups.objects.get(id=id)
             form = PersonGroupsForm(request.POST, instance = persongroup)
             if form.is_valid():
-                form.save()
+                form.save(user = request.session.get('user_id'), id = id)
                 return HttpResponse("1")
             else:
                 return HttpResponse("0")
@@ -1457,12 +1511,12 @@ def save_persongroup_offline(request, id):
 def save_person_online(request, id):
     if request.method == 'POST':
         if(id):
-            person = Person.objects.get(id = id)
+            person = Person.objects.get(id = id) 
             form = PersonForm(request.POST, instance = person)
         else:
             form = PersonForm(request.POST)
         if form.is_valid():
-            saved_person = form.save()
+            saved_person = form.save(user = request.session.get('user_id'), id = id)
             return HttpResponse('')
         else:
             errors = form.errors.as_text()
@@ -1530,7 +1584,7 @@ def save_person_offline(request, id):
         if(not id):
             form = PersonForm(request.POST)
             if form.is_valid():
-                new_form  = form.save(commit=False)
+                new_form  = form.save(user = request.session.get('user_id'), id = id, commit = False)
                 new_form.id = request.POST['id']
                 new_form.save()
                 OfflineUser.objects.set_offline_pk(new_form.id)
@@ -1541,7 +1595,7 @@ def save_person_offline(request, id):
             person = Person.objects.get(id=id)
             form = PersonForm(request.POST, instance = person)
             if form.is_valid():
-                form.save()
+                form.save(user = request.session.get('user_id'), id = id)
                 return HttpResponse("1")
             else:
                 return HttpResponse("0")
@@ -1554,7 +1608,7 @@ def save_personadoptpractice_online(request,id):
         else:
             form = PersonAdoptPracticeForm(request.POST)
         if form.is_valid():
-            form.save()
+            form.save(user = request.session.get('user_id'), id = id)
             return HttpResponse('')
         else:
             villages = get_user_villages(request)
@@ -1571,7 +1625,10 @@ def save_personadoptpractice_online(request,id):
             villages = get_user_villages(request)
             form.fields['person'].queryset = Person.objects.filter(village__in = villages).distinct().order_by('person_name')
             form.fields['video'].queryset = Video.objects.filter(id__in = Person.objects.get(pk=personadoptpractice.person_id).screening_set.values_list('videoes_screened'))
-            return HttpResponse(form)
+            # REVERT WHEN MOVING TO DJANGO 1.4
+            uni_form = [unicode(item) for item in form]
+            return HttpResponse(uni_form)
+            #return HttpResponse(form)
         else:
             districts = get_user_districts(request)
             template = """<select name="district" id="id_district"><option value='' selected='selected'>---------</option>
@@ -1615,7 +1672,7 @@ def save_personadoptpractice_offline(request, id):
         if(not id):
             form = PersonAdoptPracticeForm(request.POST)
             if form.is_valid():
-                new_form  = form.save(commit=False)
+                new_form  = form.save( user = request.session.get('user_id'), id = id, commit=False)
                 new_form.id = request.POST['id']
                 new_form.save()
                 OfflineUser.objects.set_offline_pk(new_form.id)
@@ -1625,7 +1682,7 @@ def save_personadoptpractice_offline(request, id):
             personadoptpractice = PersonAdoptPractice.objects.get(id=id)
             form = PersonAdoptPracticeForm(request.POST, instance = personadoptpractice)
             if form.is_valid():
-                form.save()
+                form.save(user = request.session.get('user_id'), id = id)
                 return HttpResponse("1")
             return HttpResponse("0")
 
@@ -1643,10 +1700,11 @@ def save_screening_online(request,id):
                 form = ScreeningForm(request.POST)
                 formset = PersonMeetingAttendanceInlineFormSet(request.POST, request.FILES)
             if form.is_valid() and formset.is_valid():
-                saved_screening = form.save()
+                saved_screening = form.save(user = request.session.get('user_id'), id = id)
                 screening = Screening.objects.get(pk=saved_screening.id)
                 formset = PersonMeetingAttendanceInlineFormSet(request.POST, request.FILES, instance=screening)
-                formset.save()
+                pma_instances = formset.save(commit=False)
+                save_all(pma_instances, user = request.session.get('user_id'), id = id)
                 return HttpResponse('')
             else:
                 errors = form.errors.as_text()
@@ -1724,7 +1782,7 @@ def save_screening_offline(request, id):
         if(not id):
             form = ScreeningForm(request.POST)
             if form.is_valid():
-                new_form  = form.save(commit=False)
+                new_form  = form.save( user = request.session.get('user_id'), id = id, commit=False)
                 new_form.id = request.POST['id']
                 new_form.save()
                 form.save_m2m()
@@ -1736,7 +1794,7 @@ def save_screening_offline(request, id):
             screening = Screening.objects.get(id=id)
             form = ScreeningForm(request.POST, instance = screening)
             if form.is_valid():
-                form.save()
+                form.save(user = request.session.get('user_id'), id = id)
                 return HttpResponse("1")
             else:
                 return HttpResponse("0")
@@ -1760,7 +1818,7 @@ def save_groupstargetedinscreening_offline(request, id):
         if(not id):
             form = GroupsTargetedInScreeningForm(request.POST)
             if form.is_valid():
-                new_form  = form.save(commit=False)
+                new_form  = form.save( user = request.session.get('user_id'), id = id, commit=False)
                 new_form.id = request.POST['id']
                 new_form.save()
                 OfflineUser.objects.set_offline_pk(new_form.id)
@@ -1771,7 +1829,7 @@ def save_groupstargetedinscreening_offline(request, id):
             grouptargeted = GroupsTargetedInScreening.objects.get(id=id)
             form = GroupsTargetedInScreeningForm(request.POST, instance = grouptargeted)
             if form.is_valid():
-                form.save()
+                form.save(user = request.session.get('user_id'), id = id)
                 return HttpResponse("1")
             else:
                 return HttpResponse("0")
@@ -1781,7 +1839,7 @@ def save_videosscreenedinscreening_online(request):
     if request.method == 'POST':
         form = VideosScreenedInScreeningForm(request.POST)
         if form.is_valid():
-            form.save()
+            form.save(user = request.session.get('user_id'), id = id)
             return HttpResponse('')
         else:
             return HttpResponse(form.errors.as_text(), status=201)
@@ -1790,7 +1848,10 @@ def save_videosscreenedinscreening_online(request):
         villages = get_user_villages(request)
         form.fields['screening'].queryset = Screening.objects.filter(village__in = villages).distinct().order_by('date')
         form.fields['video'].queryset = Video.objects.filter(village__in = villages).distinct().order_by('title')
-        return HttpResponse(form)
+        # REVERT WHEN MOVING TO DJANGO 1.4
+        uni_form = [unicode(item) for item in form]
+        return HttpResponse(uni_form)
+        #return HttpResponse(form)
 
 
 def get_videosscreenedinscreening_online(request, offset, limit):
@@ -1811,7 +1872,7 @@ def save_videosscreenedinscreening_offline(request, id):
         if(not id):
             form = VideosScreenedInScreeningForm(request.POST)
             if form.is_valid():
-                new_form  = form.save(commit=False)
+                new_form  = form.save( user = request.session.get('user_id'), id = id, commit=False)
                 new_form.id = request.POST['id']
                 new_form.save()
                 OfflineUser.objects.set_offline_pk(new_form.id)
@@ -1822,7 +1883,7 @@ def save_videosscreenedinscreening_offline(request, id):
             videoscreened = VideosScreenedInScreening.objects.get(id=id)
             form = VideosScreenedInScreeningForm(request.POST, instance = videoscreened)
             if form.is_valid():
-                form.save()
+                form.save(user = request.session.get('user_id'), id = id)
                 return HttpResponse("1")
             else:
                 return HttpResponse("0")
@@ -1836,7 +1897,7 @@ def save_training_online(request,id):
         else:
             form  = TrainingForm(request.POST)
         if form.is_valid():
-            form.save()
+            form.save(user = request.session.get('user_id'), id = id)
             return HttpResponse('')
         else:
             return HttpResponse(form.errors.as_text(),status = 201)
@@ -1849,7 +1910,10 @@ def save_training_online(request,id):
         villages = get_user_villages(request)
         form.fields['village'].queryset = villages.order_by('village_name')
         form.fields['animators_trained'].queryset = Animator.objects.filter(village__in = villages).distinct().order_by('name')
-        return HttpResponse(form)
+        # REVERT WHEN MOVING TO DJANGO 1.4
+        uni_form = [unicode(item) for item in form]
+        return HttpResponse(uni_form)
+        #return HttpResponse(form)
 
 def get_trainings_online(request, offset, limit):
     if request.method == 'POST':
@@ -1871,7 +1935,7 @@ def save_training_offline(request, id):
         if(not id):
             form = TrainingForm(request.POST)
             if form.is_valid():
-                new_form  = form.save(commit=False)
+                new_form  = form.save( user = request.session.get('user_id'), id = id, commit=False)
                 new_form.id = request.POST['id']
                 new_form.save()
                 form.save_m2m()
@@ -1883,7 +1947,7 @@ def save_training_offline(request, id):
             training = Training.objects.get(id=id)
             form = TrainingForm(request.POST, instance = training)
             if form.is_valid():
-                form.save()
+                form.save(user = request.session.get('user_id'), id = id)
                 return HttpResponse("1")
             else:
                 return HttpResponse("0")
@@ -1893,7 +1957,7 @@ def save_traininganimatorstrained_online(request):
     if request.method == 'POST':
         form = TrainingAnimatorsTrainedForm(request.POST)
         if form.is_valid():
-            form.save()
+            form.save(user = request.session.get('user_id'), id = id)
             return HttpResponse('')
         else:
             return HttpResponse(form.errors.as_text(), status=201)
@@ -1901,7 +1965,10 @@ def save_traininganimatorstrained_online(request):
         form = TrainingAnimatorsTrainedForm()
         villages = get_user_villages(request)
         form.fields['animator'].queryset = Animator.objects.filter(village__in = villages).distinct().order_by('name')
-        return HttpResponse(form)
+        # REVERT WHEN MOVING TO DJANGO 1.4
+        uni_form = [unicode(item) for item in form]
+        return HttpResponse(uni_form)
+        #return HttpResponse(form)
 
 
 def get_traininganimatorstrained_online(request, offset, limit):
@@ -1922,7 +1989,7 @@ def save_traininganimatorstrained_offline(request, id):
         if(not id):
             form = TrainingAnimatorsTrainedForm(request.POST)
             if form.is_valid():
-                new_form  = form.save(commit=False)
+                new_form  = form.save( user = request.session.get('user_id'), id = id, commit=False)
                 new_form.id = request.POST['id']
                 new_form.save()
                 OfflineUser.objects.set_offline_pk(new_form.id)
@@ -1933,7 +2000,7 @@ def save_traininganimatorstrained_offline(request, id):
             traininganimatortrained = TrainingAnimatorsTrained.objects.get(id=id)
             form = TrainingAnimatorsTrainedForm(request.POST, instance = traininganimatortrained)
             if form.is_valid():
-                form.save()
+                form.save(user = request.session.get('user_id'), id = id)
                 return HttpResponse("1")
             else:
                 return HttpResponse("0")
@@ -1943,7 +2010,7 @@ def save_monthlycostpervillage_online(request):
     if request.method == 'POST':
         form = MonthlyCostPerVillageForm(request.POST)
         if form.is_valid():
-            form.save()
+            form.save(user = request.session.get('user_id'), id = id)
             return HttpResponse('')
         else:
             return HttpResponse(form.errors.as_text(), status=201)
@@ -1951,7 +2018,10 @@ def save_monthlycostpervillage_online(request):
         form = MonthlyCostPerVillageForm()
         villages = get_user_villages(request)
         form.fields['village'].queryset = villages.order_by('village_name')
-        return HttpResponse(form)
+        # REVERT WHEN MOVING TO DJANGO 1.4
+        uni_form = [unicode(item) for item in form]
+        return HttpResponse(uni_form)
+        #return HttpResponse(form)
 
 def get_monthlycostpervillages_online(request, offset, limit):
     if request.method == 'POST':
@@ -1970,7 +2040,7 @@ def save_monthlycostpervillage_offline(request, id):
         if(not id):
             form = MonthlyCostPerVillageForm(request.POST)
             if form.is_valid():
-                new_form  = form.save(commit=False)
+                new_form  = form.save( user = request.session.get('user_id'), id = id, commit=False)
                 new_form.id = request.POST['id']
                 new_form.save()
                 return HttpResponse("1")
@@ -1980,7 +2050,7 @@ def save_monthlycostpervillage_offline(request, id):
             monthlycostpervillage = MonthlyCostPerVillage.objects.get(id=id)
             form = MonthlyCostPerVillageForm(request.POST, instance = monthlycostpervillage)
             if form.is_valid():
-                form.save()
+                form.save(user = request.session.get('user_id'), id = id)
                 return HttpResponse("1")
             else:
                 return HttpResponse("0")
@@ -1991,7 +2061,7 @@ def save_personrelation_online(request):
     if request.method == 'POST':
         form = PersonRelationsForm(request.POST)
         if form.is_valid():
-            form.save()
+            form.save(user = request.session.get('user_id'), id = id)
             return HttpResponse('')
         else:
             return HttpResponse(form.errors.as_text(), status=201)
@@ -2000,7 +2070,10 @@ def save_personrelation_online(request):
         villages = get_user_villages(request)
         form.fields['person'].queryset = Person.objects.filter(village__in = villages).distinct().order_by('person_name')
         form.fields['relative'].queryset = Person.objects.filter(village__in = villages).distinct().order_by('person_name')
-        return HttpResponse(form)
+        # REVERT WHEN MOVING TO DJANGO 1.4
+        uni_form = [unicode(item) for item in form]
+        return HttpResponse(uni_form)
+        #return HttpResponse(form)
 
 
 def get_personrelations_online(request, offset, limit):
@@ -2021,7 +2094,7 @@ def save_personrelation_offline(request, id):
         if(not id):
             form = PersonRelationsForm(request.POST)
             if form.is_valid():
-                new_form  = form.save(commit=False)
+                new_form  = form.save( user = request.session.get('user_id'), id = id, commit=False)
                 new_form.id = request.POST['id']
                 new_form.save()
                 return HttpResponse("1")
@@ -2031,7 +2104,7 @@ def save_personrelation_offline(request, id):
             personrelations = PersonRelations.objects.get(id=id)
             form = PersonRelationsForm(request.POST, instance = personrelations)
             if form.is_valid():
-                form.save()
+                form.save(user = request.session.get('user_id'), id = id)
                 return HttpResponse("1")
             else:
                 return HttpResponse("0")
@@ -2041,7 +2114,7 @@ def save_animatorsalarypermonth_online(request):
     if request.method == 'POST':
         form = AnimatorSalaryPerMonthForm(request.POST)
         if form.is_valid():
-            form.save()
+            form.save(user = request.session.get('user_id'), id = id)
             return HttpResponse('')
         else:
             return HttpResponse(form.errors.as_text(), status=201)
@@ -2049,7 +2122,10 @@ def save_animatorsalarypermonth_online(request):
         form = AnimatorSalaryPerMonthForm()
         villages = get_user_villages(request)
         form.fields['animator'].queryset = Animator.objects.filter(village__in = villages).distinct().order_by('name')
-        return HttpResponse(form)
+        # REVERT WHEN MOVING TO DJANGO 1.4
+        uni_form = [unicode(item) for item in form]
+        return HttpResponse(uni_form)
+        #return HttpResponse(form)
 
 
 def get_animatorsalarypermonths_online(request, offset, limit):
@@ -2070,7 +2146,7 @@ def save_animatorsalarypermonth_offline(request, id):
         if(not id):
             form = AnimatorSalaryPerMonthForm(request.POST)
             if form.is_valid():
-                new_form  = form.save(commit=False)
+                new_form  = form.save( user = request.session.get('user_id'), id = id, commit=False)
                 new_form.id = request.POST['id']
                 new_form.save()
                 return HttpResponse("1")
@@ -2080,7 +2156,7 @@ def save_animatorsalarypermonth_offline(request, id):
             animatorsalarypermonth = AnimatorSalaryPerMonth.objects.get(id=id)
             form = AnimatorSalaryPerMonthForm(request.POST, instance = animatorsalarypermonth)
             if form.is_valid():
-                form.save()
+                form.save(user = request.session.get('user_id'), id = id)
                 return HttpResponse("1")
             else:
                 return HttpResponse("0")
@@ -2103,7 +2179,7 @@ def save_personmeetingattendance_offline(request, id):
         if(not id):
             form = PersonMeetingAttendanceForm(request.POST)
             if form.is_valid():
-                new_form  = form.save(commit=False)
+                new_form  = form.save( user = request.session.get('user_id'), id = id, commit=False)
                 new_form.id = request.POST['id']
                 new_form.save()
                 OfflineUser.objects.set_offline_pk(new_form.id)
@@ -2114,7 +2190,7 @@ def save_personmeetingattendance_offline(request, id):
             personmeetingattendance = PersonMeetingAttendance.objects.get(id=id)
             form = PersonMeetingAttendanceForm(request.POST, instance = personmeetingattendance)
             if form.is_valid():
-                form.save()
+                form.save(user = request.session.get('user_id'), id = id)
                 return HttpResponse("1")
             else:
                 return HttpResponse("0")
@@ -2123,13 +2199,16 @@ def save_equipmentholder_online(request):
     if request.method == 'POST':
         form = EquipmentHolderForm(request.POST)
         if form.is_valid():
-            form.save()
+            form.save(user = request.session.get('user_id'), id = id)
             return HttpResponse('')
         else:
             return HttpResponse(form.errors.as_text(), status=201)
     else:
         form = EquipmentHolderForm()
-        return HttpResponse(form)
+        # REVERT WHEN MOVING TO DJANGO 1.4
+        uni_form = [unicode(item) for item in form]
+        return HttpResponse(uni_form)
+        #return HttpResponse(form)
 
 def get_equipmentholders_online(request, offset, limit):
     if request.method == 'POST':
@@ -2147,7 +2226,7 @@ def save_equipmentholder_offline(request, id):
         if(not id):
             form = EquipmentHolderForm(request.POST)
             if form.is_valid():
-                new_form  = form.save(commit=False)
+                new_form  = form.save( user = request.session.get('user_id'), id = id, commit=False)
                 new_form.id = request.POST['id']
                 new_form.save()
                 OfflineUser.objects.set_offline_pk(new_form.id)
@@ -2158,7 +2237,7 @@ def save_equipmentholder_offline(request, id):
             equipmentholder = EquipmentHolder.objects.get(id=id)
             form = EquipmentHolderForm(request.POST, instance = equipmentholder)
             if form.is_valid():
-                form.save()
+                form.save(user = request.session.get('user_id'), id = id)
                 return HttpResponse("1")
             else:
                 return HttpResponse("0")
@@ -2168,13 +2247,16 @@ def save_reviewer_online(request):
     if request.method == 'POST':
         form = ReviewerForm(request.POST)
         if form.is_valid():
-            form.save()
+            form.save(user = request.session.get('user_id'), id = id)
             return HttpResponse('')
         else:
             return HttpResponse(form.errors.as_text(), status=201)
     else:
         form = ReviewerForm()
-        return HttpResponse(form)
+        # REVERT WHEN MOVING TO DJANGO 1.4
+        uni_form = [unicode(item) for item in form]
+        return HttpResponse(uni_form)
+        #return HttpResponse(form)
 
 def get_reviewers_online(request, offset, limit):
     if request.method == 'POST':
@@ -2192,7 +2274,7 @@ def save_reviewer_offline(request, id):
         if(not id):
             form = ReviewerForm(request.POST)
             if form.is_valid():
-                new_form  = form.save(commit=False)
+                new_form  = form.save( user = request.session.get('user_id'), id = id, commit=False)
                 new_form.id = request.POST['id']
                 new_form.save()
                 return HttpResponse("1")
@@ -2202,7 +2284,7 @@ def save_reviewer_offline(request, id):
             reviewer = Reviewer.objects.get(id=id)
             form = ReviewerForm(request.POST, instance = reviewer)
             if form.is_valid():
-                form.save()
+                form.save(user = request.session.get('user_id'), id = id)
                 return HttpResponse("1")
             else:
                 return HttpResponse("0")
@@ -2222,7 +2304,7 @@ def save_target_online(request,id):
         else:
             form = TargetForm(obj)
         if form.is_valid():
-            form.save()
+            form.save(user = request.session.get('user_id'), id = id)
             return HttpResponse('')
         else:
             return HttpResponse(form.errors.as_text(),status = 201)
@@ -2234,7 +2316,10 @@ def save_target_online(request,id):
             form = TargetForm()
         districts = get_user_districts(request)
         form.fields['district'].queryset = districts.order_by('district_name')
-        return HttpResponse(form)
+        # REVERT WHEN MOVING TO DJANGO 1.4
+        uni_form = [unicode(item) for item in form]
+        return HttpResponse(uni_form)
+        #return HttpResponse(form)
 
 def get_targets_online(request, offset, limit):
     if request.method == 'POST':
@@ -2256,7 +2341,7 @@ def save_target_offline(request, id):
         if(not id):
             form = TargetForm(request.POST)
             if form.is_valid():
-                new_form  = form.save(commit=False)
+                new_form  = form.save( user = request.session.get('user_id'), id = id, commit=False)
                 new_form.id = request.POST['id']
                 new_form.save()
                 form.save_m2m()
@@ -2268,7 +2353,7 @@ def save_target_offline(request, id):
             target = Target.objects.get(id=id)
             form = TargetForm(request.POST, instance = target)
             if form.is_valid():
-                form.save()
+                form.save(user = request.session.get('user_id'), id = id)
                 return HttpResponse("1")
             else:
                 return HttpResponse("0")
@@ -2377,7 +2462,7 @@ def practices_seen_by_farmer(request, person_id):
         for vid in video_list:
             video_data.append({'value':vid[0],'string':vid[1]})    
         data['video_list'] = video_data
-        data['person_list'] = [{'value':farmer.id, 'string':str(farmer)}]
+        data['person_list'] = [{'value':farmer.id, 'string':unicode(farmer)}]
         return HttpResponse(cjson.encode(data), mimetype='application/json')
 
 def filters_for_village (request, village_id):
@@ -2415,7 +2500,7 @@ def person_meeting_attendance_data(request, person_id, screening_id):
                 video_data.append({'value':video[0],'string':video[1]})
             data = {
                 'pma' : {'id':pma.id,'screening':pma.screening_id},
-                'person_list' : [{'value':farmer.id, 'string':str(farmer)}],
+                'person_list' : [{'value':farmer.id, 'string':unicode(farmer)}],
                 'video_list': video_data,
                 'expressed_question_comment': pma.expressed_question,
                 'interested' : pma.interested,
