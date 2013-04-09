@@ -15,7 +15,8 @@ def read_userfile(file):
     data = json.loads(json_data)
     return data
 
-def write_person_detail(person, filename, i):
+def write_person_detail(person_id, filename, i=0):
+    person = Person.objects.get(id = person_id)
     f = open(filename,'w')
     num_people = 1
     f.write('<?xml version="1.0" ?>\n')
@@ -62,7 +63,7 @@ def write_person_detail(person, filename, i):
 def make_upload_file(villages, filename):
     for person in Person.objects.filter(village__in = villages):
         i = 0
-        write_person_detail(person, filename, i)
+        write_person_detail(person.id, filename, i)
         response = upload_file(filename)
         print response
         break
