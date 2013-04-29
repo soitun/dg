@@ -278,7 +278,7 @@ def write_video_schedule_info(vid_dict, workbook):
     return sheet
         
 from userfile_functions import read_userfile
-data = read_userfile('userfile.json')
+data = read_userfile('userfileappilot.json')
 cluster_village_dict = []
 mediator_dict = []
 for entry in data:
@@ -297,6 +297,10 @@ group_sheet = write_group_info(cluster_village_dict, workbook)
 village_sheet = write_village_info(cluster_village_dict, workbook)
 mediator_sheet = write_mediator_info(mediator_dict, workbook)
 video_schedule_dict, video_list = video_schedule.get_video_schedule()
+print video_list
+video_list = Screening.objects.filter(village__block__district__state__state_name = 'Andhra Pradesh').values_list('videoes_screened', flat=True)
+video_list = set(video_list)
+print video_list
 video_distinct_sheet = write_distinct(video_list,workbook)
 video_schedule_sheet = write_video_schedule_info(video_schedule_dict,workbook)
 workbook.save('trial-2-Fixtures_02_25.xls')

@@ -109,7 +109,8 @@ def save_adoption_data(xml_tree):
             try:
                 pap = PersonAdoptPractice( person_id = screening_data['selected_person'],
                                      date_of_adoption = screening_data['date'],
-                                     video_id = screening_data['selected_video'])
+                                     video_id = screening_data['selected_video'],
+                                     )
             
                 if pap.full_clean() == None:
                     pap.save()
