@@ -79,15 +79,15 @@ class Collection(models.Model):
     thumbnailURL = models.URLField(max_length=200)
     state = models.CharField(max_length=100)
     country = models.ForeignKey(Country,related_name='related_collections')
-    partner = models.ForeignKey(Partner,related_name='partner_collections')
+    partnerUID = models.ForeignKey(Partner,related_name='partner_collections')
     language = models.ForeignKey(Language,max_length=20, related_name='language_collections')
     videos = models.ManyToManyField(Video,related_name='video_collections')
     
     # INTERNAL FIELDS
-    category = models.CharField(max_length=500, blank=True)
-    subcategory = models.CharField(max_length=500, blank=True)
+    #category = models.CharField(max_length=500, blank=True)
+    #subcategory = models.CharField(max_length=500, blank=True)
     topic = models.CharField(max_length=500, blank=True)
-    subtopic = models.CharField(max_length=500, blank=True)
+    #subtopic = models.CharField(max_length=500, blank=True)
     subject = models.CharField(max_length=500, blank=True)
     
 class Farmer(models.Model):
