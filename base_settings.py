@@ -108,8 +108,8 @@ INSTALLED_APPS = (
     'video_practice_map',
     'path',
     'fbconnect',
-    #'tastypie',
-    #'social_website',
+    'tastypie',
+    'social_website',
     'new_website_admin',
 )
 
