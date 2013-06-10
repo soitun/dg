@@ -1,0 +1,100 @@
+ {% extends "base_team.html" %}
+  {% block title %}Digital Green - Team - Team Members {% endblock %} {% block breadcrumsmore %}
+  {% block jsfile %}
+       <script type="text/javascript" src="/media/Output/JS/Janalytics.js"></script>
+       <script type="text/javascript" src="/media/js/jquery-scrollto.js"></script>
+  {% endblock jsfile %}
+<a href='/team'> Team </a>/
+
+<span style='font-size: 0.9em; font-weight: bold;'> Team Members
+</span>
+{% endblock breadcrumsmore %} {% block mainbodycontentleft %}
+<div class='pagetitle'>Team Members</div>
+<div>
+	<a class="regionname" href="javascript:void(0);" id="delhiteam"> Headquarters-Delhi</a>
+	<a class="regionname" href="javascript:void(0);" id="bangaloreteam"> Bangalore</a>
+	<a class="regionname" href="javascript:void(0);" id="bhopalteam"> Bhopal</a>
+	<a class="regionname" href="javascript:void(0);" id="bhubaneswarteam"> Bhubaneswar</a>
+	<a class="regionname" href="javascript:void(0);" id="hyderabadteam"> Hyderabad</a>
+	<a class="regionname" href="javascript:void(0);" id="patnateam"> Patna</a>
+</div>
+<div style="clear:both;"></div>
+<div id="contentdiv1">
+	<script type='text/javascript'>
+	$("#delhiteam").click ( function() {
+		$('#Headquarters-Delhi').ScrollTo();
+	});
+	$("#bangaloreteam").click ( function() {
+		$('#Bangalore').ScrollTo();
+	});
+	$("#bhopalteam").click ( function() {
+		$('#Bhopal').ScrollTo();
+	});
+	$("#bhubaneswarteam").click ( function() {
+		$('#Bhubaneswar').ScrollTo();
+	});
+	$("#hyderabadteam").click ( function() {
+		$('#Hyderabad').ScrollTo();
+	});
+	$("#patnateam").click ( function() {
+		$('#Patna').ScrollTo();
+	});
+	</script>
+	
+	{% if location_list %}
+		<table id="table1" cellspacing="0px" cellpadding="0">
+			<tbody>
+				{% for loc in location_list %}
+				<tr>
+					<td class="contenttd1" cellspacing="0px" cellpadding="0">
+						<div id={{loc.location_name}} class="pagetitle">
+	                         {{loc.location_name}}
+	                    </div>
+	                </td>
+	            </tr>
+	            
+	            {% if loc.location_team_members %}
+	            	{% for team in loc.location_team_members %}
+	            	{% if loc.location_name == "Headquarters-Delhi" %}
+	            		<tr>
+	            			<td class="contenttd1" cellspacing="0px" cellpadding="0">
+	            				<div  class="pagetitle">
+	                    			{{team.team_name}}
+	                			</div>
+	            			</td>
+	            		</tr>
+	            	{% endif %}
+	            		
+	            		{% if team.team_members %}
+	            			
+	            			{% for mem in team.team_members %}
+	            				<tr>
+	            					<td class="contenttd1" cellspacing="0px" cellpadding="0">
+	            						<div class="contenttd1div1">
+	            							<img style="width:118px; height:124px;" src='/media/{{mem.image}}'>
+	            							<div class="contenttd1div1name">{{mem.name}}</div>
+	            						</div>
+	            						<div class="contenttd1div2">
+	            							<div class="contenttd1div2title">
+	            								<ul class="contenttd1div2titleul">
+	            									<li style="color: Gray; font-weight: bold;">{{mem.designation}}</li>
+	            									<li><a class="maillinks" href="mailto:{{mem.email}}">{{mem.email}}</a></li>
+	            								</ul>
+	            							</div>
+	            							<div class="contenttd1div2desc">
+	            							<p>{{mem.personal_intro}}</p>
+	            						    </div>
+	            						</div>
+	            					</td>
+	            				</tr>
+	            			{% endfor %}
+	            		
+	            		{% endif %}
+	            	{% endfor %}
+	            {% endif %}
+	            {% endfor %}
+	        </tbody>
+	    </table>
+	{% endif %}
+</div>
+{% endblock mainbodycontentleft %}

@@ -27,6 +27,7 @@ urlpatterns = patterns('',
     (r'^site_media/(?P<path>.*)$', 'django.views.static.serve',{'document_root': settings.STATIC_DOC_ROOT, 'show_indexes': True}),
     # Uncomment the next line to enable the admin:
     (r'^admin/', include(admin.site.urls)),
+    (r'^websiteadmin/', include('new_website_admin.urls')),
     (r'^animators-by-village-id/(\d+)/$', feed_animators),
     (r'/search/', search),
     (r'^dashboard/getkey/$', get_key_for_user),
@@ -266,6 +267,7 @@ urlpatterns = patterns('',
     (r'^path/update/?$',update),
     (r'^fbconnect/', include('fbconnect.urls')),
     (r'^get_log/?$',send_updated_log),
+    (r'^html_exercise/?$',html_exercise),
      
 )
 

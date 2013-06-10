@@ -32,9 +32,9 @@ USE_I18N = True
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
-MEDIA_ROOT = '/var/www/media/uploaded_files/'
-#MEDIA_ROOT = os.path.join(PROJECT_PATH, 'media')
-
+#MEDIA_ROOT = '/var/www/media/uploaded_files/'
+MEDIA_ROOT = os.path.join(PROJECT_PATH, 'media')
+#MEDIA_ROOT = ''
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
 # Examples: "http://media.lawrence.com", "http://example.com/media/"
@@ -63,7 +63,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-	'django.contrib.messages.middleware.MessageMiddleware'
+    'django.contrib.messages.middleware.MessageMiddleware',
     #'debug_toolbar.middleware.DebugToolbarMiddleware',
 )
 
@@ -77,11 +77,13 @@ TEMPLATE_DIRS = (
     os.path.join(PROJECT_PATH, 'templates/output'),
     os.path.join(PROJECT_PATH, 'templates/static_site'),
     os.path.join(PROJECT_PATH, 'templates/farmerbook'),
+    os.path.join(PROJECT_PATH, 'templates/social_website'),
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.request',
-    'django.contrib.auth.context_processors.auth'
+    'django.core.context_processors.static',
+    'django.contrib.auth.context_processors.auth',  
 )
 
 INSTALLED_APPS = (
@@ -90,18 +92,25 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.staticfiles',
-    #'django.contrib.sites',
+    'django.contrib.sites',
     'django.contrib.admindocs',
+    'django.contrib.messages',
     'dashboard',
-    #'debug_toolbar',
     'output',
+    #'debug_toolbar',
+    #'dimagi',
+    #'debug_toolbar',
+    #'debug_toolbar',
     'raven.contrib.django',
     'django.contrib.humanize',
     'south',
     'farmerbook',
     'video_practice_map',
     'path',
-    'fbconnect'
+    'fbconnect',
+    #'tastypie',
+    #'social_website',
+    'new_website_admin',
 )
 
 LOGGING = {
