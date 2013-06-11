@@ -4,7 +4,7 @@ from new_website_admin.models import Member
 from django.core.files.images import get_image_dimensions
 
 
-class ImageAdminValidation(forms.ModelForm):
+class ImageAdminForm(forms.ModelForm):
     class Meta:
         model = Member
 
@@ -12,6 +12,6 @@ class ImageAdminValidation(forms.ModelForm):
         image_upload = self.cleaned_data.get("image")
         width, height = get_image_dimensions(image_upload)
         if (height > 124) and (width > 118):
-            raise forms.ValidationError("""Image Should be 118 X 124
-                                        in Dimension or less""")
+            raise forms.ValidationError("""Images should be 118 pixels wide 
+                                        and 124 pixels high""")
         return image_upload
