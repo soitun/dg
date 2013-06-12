@@ -1,5 +1,5 @@
 from new_website_admin.models import Member
-from new_website_admin.forms import ImageAdminValidation
+from new_website_admin.forms import ImageAdminForm
 from django.contrib import admin
 from django.contrib.admin.sites import AdminSite
 
@@ -10,7 +10,7 @@ website_admin = WebsiteAdmin(name='local')
 
 
 class TeamMember(admin.ModelAdmin):
-    form = ImageAdminValidation
+    form = ImageAdminForm
     fieldsets = [(None,  {'fields': ['name', 'email', 'designation',
                                      'team', 'personal_intro', 'location',
                                      'image']
