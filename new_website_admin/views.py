@@ -4,6 +4,7 @@ from new_website_admin.models import team_choices
 from new_website_admin.models import location_choices
 from django.shortcuts import render_to_response
 from django.template import RequestContext
+from django.core.paginator import *
 
 
 def member_view(request):
@@ -23,4 +24,13 @@ def member_view(request):
     
 def media_view(request):
     media_list = Article.objects.all().order_by('-pub_date')
-    return render_to_response('base_press.html',{'media_list':media_list})
+    paginator = Paginator(media_list, 6)
+    page = request.GET.get('page')
+    try:
+        media = paginator.page(page)
+    except PageNotAnInteger:
+        media = paginator.page(1)
+    except EmptyPage:
+        media = paginator.page(paginator.num_pages)
+            
+    return render_to_response('base_press.html',{'media':media})

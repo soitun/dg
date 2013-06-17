@@ -48,7 +48,7 @@
 					<table id="table1" cellspacing="0" cellpadding="0">
 						<tbody>
 							
-							{% for med in media_list %}
+							{% for med in media %}
 						
 							<tr><td class="contenttd1" cellspacing="0" cellpadding="0">
 								
@@ -67,9 +67,25 @@
 								</ul></div></td>
 								</tr>
 							{% endfor %}
+
 								</tbody></table></td></tr></tbody></table>
 								
+<div class="pagination">
+    
+	<span class="step-links">
+        {% if media.has_previous %}
+            <a href="?page={{ media.previous_page_number }}">Previous</a>
+        {% endif %}
 
+        <span class="current">
+            Page {{ media.number }} of {{ media.paginator.num_pages }}
+        </span>
+
+        {% if media.has_next %}
+            <a href="?page={{ media.next_page_number }}">Next</a>
+        {% endif %}
+    </span>
+</div>
 								
 
 
