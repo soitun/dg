@@ -1,5 +1,5 @@
 # Create your views here.
-from new_website_admin.models import Member
+from new_website_admin.models import Member, Article
 from new_website_admin.models import team_choices
 from new_website_admin.models import location_choices
 from django.shortcuts import render_to_response
@@ -7,6 +7,7 @@ from django.template import RequestContext
 
 
 def member_view(request):
+    
     location_list = []
     for location in location_choices:
         team_list = []
@@ -17,6 +18,9 @@ def member_view(request):
                               'team_members': member_list})
         location_list.append({'location_name': location[0],
                               'location_team_members': team_list})
-
     return render_to_response('team.html', {'location_list': location_list},
                               context_instance=RequestContext(request))
+    
+def media_view(request):
+    media_list = Article.objects.all().order_by('-pub_date')
+    return render_to_response('base_press.html',{'media_list':media_list})

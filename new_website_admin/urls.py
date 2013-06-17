@@ -1,12 +1,19 @@
 from django.conf import settings
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.conf.urls import patterns, include, url
-from new_website_admin.admin import website_admin
+from new_website_admin.admin import Press
+from new_website_admin.admin import website_admin  
+from django.contrib import admin
 from views import member_view
+from views import media_view
 
+
+admin.autodiscover()
 
 urlpatterns = patterns('',
+                       url(r'^press/$', media_view),
+                       url(r'^teammember/$', member_view),
+                       url(r'^', include(website_admin.urls)),
+                       #url(r'^', include(admin.site.urls)),
                        
-                       (r'^teammember/$', member_view),
-                       (r'^', include(website_admin.urls)),
                        )

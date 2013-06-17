@@ -97,8 +97,8 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'dashboard',
     'output',
-    'debug_toolbar',
-    'raven.contrib.django',
+    #'debug_toolbar',
+    #'raven.contrib.django',
     'django.contrib.humanize',
     'south',
     'farmerbook',
@@ -106,7 +106,7 @@ INSTALLED_APPS = (
     'path',
     'fbconnect',
     'tastypie',
-    'social_website',
+    #'social_website',
     'new_website_admin',
 )
 
