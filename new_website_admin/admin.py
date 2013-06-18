@@ -21,7 +21,7 @@ class TeamMember(admin.ModelAdmin):
     search_fields = ['name']
 
 
-class Press(admin.ModelAdmin):
+class ArticleAdmin(admin.ModelAdmin):
     fieldsets = [(None,{'fields':['title','source']}),
                 ('Content',{'fields':['content','link','location']}),
                 ('Date information',{'fields':['pub_date']}),]
@@ -35,4 +35,4 @@ class Press(admin.ModelAdmin):
     
 
 website_admin.register(Member, TeamMember)
-website_admin.register(Article, Press)
+website_admin.register(Article, ArticleAdmin)
