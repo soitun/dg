@@ -31,8 +31,7 @@ class Member(models.Model):
                               upload_to='Output/Images')
 
     def __unicode__(self):
-        return self.name
-        
+        return self.name     
 class Article(models.Model):
     title = models.CharField(max_length=500)
     pub_date = models.DateField("Date Published on")

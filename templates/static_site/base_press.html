@@ -12,8 +12,7 @@
 {% block jsfile %}
        <script type="text/javascript" src="/media/Output/JS/Janalytics.js"></script>
 	   <script type="text/javascript" src="path_to/jquery.js"></script>
-	   <script type="text/javascript" src="path_to/jquery.simplePagination.js"></script>
-
+	   
 
 	   
 {% endblock jsfile %}
@@ -54,38 +53,45 @@
 								
 														
 								<div class="contenttd1div1">
-								<ul class="contenttd1div2titleul">
-								<li><a href={{med.link}}>{{med.title}}</a></li>
-								</ul>
-								<ul class="contenttd1div1descul"><li>{{med.source}}</li><li>|</li><li><!--HAVE TO WORK UPON THIS--><!--Tue, 15 May 2013--> {{med.pub_date|date:"D"}},{{med.pub_date|date:" d F Y"}}</li></ul>
+									<ul class="contenttd1div2titleul">
+										<li><a href={{med.link}}>{{med.title}}</a></li>
+									</ul>
+									<ul class="contenttd1div1descul">
+										<li>{{med.source}}</li><li>|</li><li> {{med.pub_date|date:"D"}},{{med.pub_date|date:" d F Y"}}</li>
+									</ul>
 								</div>
 								<div class="contenttd1div2">
-								<div class="contenttd1div2desc"><p><span class="pstyle">{{med.location}}:&nbsp;</span>"{{med.content}}"</p></div>
+									<div class="contenttd1div2desc">
+										<p><span class="pstyle">{{med.location}}:&nbsp;</span>"{{med.content}}"</p>
+									</div>
 								</div>
 								<div class="contenttd1div3">
-								<ul class="contenttd1div3descul"><li><a href={{med.link}}>Full Coverage</a></li>
-								</ul></div></td>
-								</tr>
+									<ul class="contenttd1div3descul"><li><a href={{med.link}}>Full Coverage</a></li></ul>
+								</div>
+							</td></tr>
 							{% endfor %}
-
-								</tbody></table></td></tr></tbody></table>
+						</tbody>
+					</table>
+				</td></tr>
+			</tbody>
+		</table>
 								
-<div class="pagination">
+	<div class="pagination">
     
-	<span class="step-links">
-        {% if media.has_previous %}
-            <a href="?page={{ media.previous_page_number }}">Previous</a>
-        {% endif %}
+		<span class="step-links">
+			{% if media.has_previous %}
+				<a href="?page={{ media.previous_page_number }}">Previous</a>
+			{% endif %}
 
-        <span class="current">
-            Page {{ media.number }} of {{ media.paginator.num_pages }}
-        </span>
+			<span class="current">
+				Page {{ media.number }} of {{ media.paginator.num_pages }}
+			</span>
 
-        {% if media.has_next %}
-            <a href="?page={{ media.next_page_number }}">Next</a>
-        {% endif %}
-    </span>
-</div>
+			{% if media.has_next %}
+				<a href="?page={{ media.next_page_number }}">Next</a>
+			{% endif %}
+		</span>
+	</div>
 								
 
 

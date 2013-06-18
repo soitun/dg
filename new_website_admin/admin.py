@@ -1,4 +1,4 @@
-from new_website_admin.models import Member, Article
+from new_website_admin.models import Article, Member 
 from new_website_admin.forms import ImageAdminForm
 from django.contrib import admin
 from django.contrib.admin.sites import AdminSite
@@ -20,8 +20,6 @@ class TeamMember(admin.ModelAdmin):
     list_display = ('name', 'email', 'designation')
     search_fields = ['name']
 
-website_admin.register(Member, TeamMember)
-#admin.site.register(Member,TeamMember)
 
 class Press(admin.ModelAdmin):
     fieldsets = [(None,{'fields':['title','source']}),
@@ -31,11 +29,10 @@ class Press(admin.ModelAdmin):
     list_display = ('title','pub_date','source')
    
       
-    #format_date.short_description = 'Date'
     list_filter = ['pub_date']
-    search_fields = ['title']
+    search_fields = ['title','content']
     date_hierarchy = 'pub_date'
     
-#admin.site.register(Article,Press)
-website_admin.register(Article, Press)
 
+website_admin.register(Member, TeamMember)
+website_admin.register(Article, Press)
