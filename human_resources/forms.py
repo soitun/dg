@@ -1,8 +1,6 @@
-from django.forms import ModelForm
 from django import forms
-from new_website_admin.models import Member
 from django.core.files.images import get_image_dimensions
-
+from models import Member
 
 class ImageAdminForm(forms.ModelForm):
     class Meta:

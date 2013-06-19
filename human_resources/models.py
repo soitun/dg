@@ -1,7 +1,5 @@
-from django.db import models
 from django.core.validators import MaxLengthValidator, MinLengthValidator
-# Create your models here.
-
+from django.db import models
 
 team_choices = [('Executive Leadership Team', 'Executive Leadership Team'),
                 ('Technology Team', 'Technology Team'),
@@ -15,7 +13,7 @@ location_choices = [('Headquarters-Delhi', 'Headquarters-Delhi'),
                     ('Hyderabad', 'Hyderabad'),
                     ('Patna', 'Patna')]
 
-
+# Models for Team page
 class Member(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField(max_length=254)  # all possible valid e-mails
@@ -32,14 +30,27 @@ class Member(models.Model):
 
     def __unicode__(self):
         return self.name     
-class Article(models.Model):
-    title = models.CharField(max_length=500)
-    pub_date = models.DateField("Date Published on")
-    source = models.CharField(max_length = 300)
-    location = models.CharField(max_length = 200)
-    content = models.TextField()
-    link = models.URLField(max_length = 1000)
-    
+
+# Models for Careers page
+
+class Job(models.Model):
+    title = models.CharField(max_length = 300)
+    description = models.TextField()
+    conclusion = models.TextField()
     
     def __unicode__(self):
         return '%s' %(self.title)
+
+class KeyResponsibilities(models.Model):
+    job = models.ForeignKey(Job)
+    point = models.CharField(max_length = 500)
+    
+    def __unicode__(self):
+        return '%s' %(self.point)
+
+class ExperienceQualification(models.Model):
+    job = models.ForeignKey(Job)
+    point = models.CharField(max_length = 500)
+    
+    def __unicode__(self):
+        return '%s' %(self.point)

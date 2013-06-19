@@ -105,7 +105,8 @@ INSTALLED_APPS = (
     'path',
     'fbconnect',
     'tastypie',
-    'new_website_admin',
+    'human_resources',
+    'communications',
 )
 
 LOGGING = {

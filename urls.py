@@ -11,6 +11,7 @@ from path.views import page, update
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
 from dashboard.data_log import send_updated_log
+from website_admin import website_admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
@@ -27,7 +28,7 @@ urlpatterns = patterns('',
     (r'^site_media/(?P<path>.*)$', 'django.views.static.serve',{'document_root': settings.STATIC_DOC_ROOT, 'show_indexes': True}),
     # Uncomment the next line to enable the admin:
     (r'^admin/', include(admin.site.urls)),
-    (r'^websiteadmin/', include('new_website_admin.urls')),
+    (r'^websiteadmin/', include(website_admin.urls)),
     (r'^animators-by-village-id/(\d+)/$', feed_animators),
     (r'/search/', search),
     (r'^dashboard/getkey/$', get_key_for_user),
@@ -199,8 +200,8 @@ urlpatterns = patterns('',
     (r'^teamacclaw/?$',teamacclaw),
     (r'^teamintern/?$',teamintern),
     (r'^teamalumni/?$',teamalumni),
-    (r'^teammember/?$',teammember),
-    (r'^press/?$',press),
+    (r'^teammember/?$','human_resources.views.member_view'),
+    (r'^press/?$','communications.views.media_view'),
     (r'^partner/?$',partner),
     (r'^rfa/?$',rfa),
     (r'^partnerexecutive/?$',partnerexecutive),

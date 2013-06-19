@@ -1,8 +1,6 @@
-from new_website_admin.models import Article, location_choices, Member, team_choices
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-from django.core.paginator import *
-
+from human_resources.models import location_choices, Member, team_choices
 
 def member_view(request):
     location_list = []
@@ -17,15 +15,3 @@ def member_view(request):
                               'location_team_members': team_list})
     return render_to_response('team.html', {'location_list': location_list},
                               context_instance=RequestContext(request))
-def media_view(request):
-    media_list = Article.objects.all().order_by('-pub_date')
-    paginator = Paginator(media_list, 6) #dividing 6 articles per page
-    page = request.GET.get('page')
-    try:
-        media = paginator.page(page)
-    except PageNotAnInteger:
-        media = paginator.page(1)
-    except EmptyPage:
-        media = paginator.page(paginator.num_pages)
-            
-    return render_to_response('base_press.html',{'media':media})
