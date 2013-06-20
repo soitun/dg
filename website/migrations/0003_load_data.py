@@ -75,10 +75,13 @@ class Migration(DataMigration):
                 if i.related_practice.practice_subject != None:
                     sub=i.related_practice.practice_subject.name
 
+## TODO fix video likes, views and adoptions
+ 
             for j in orm['dashboard.VideosScreenedInScreening'].objects.filter(video_id=i.id):
                 offvw = offvw + len(orm['dashboard.PersonMeetingAttendance'].objects.filter(screening_id = j.screening_id))
                 offlk = offlk + int(orm['dashboard.PersonMeetingAttendance'].objects.filter(screening_id = 6000019734).values ('screening_id').annotate(count = Sum('interested')).values_list('count', flat=True)[0])
             adops=len(orm['dashboard.PersonAdoptPractice'].objects.filter(video_id=i.id))
+##
             if i.youtubeid!="":
                 try:
                     entry = yt_service.GetYouTubeVideoEntry(video_id=i.youtubeid)
@@ -88,11 +91,13 @@ class Migration(DataMigration):
                     else:
                         temp=Video(uid=str(i.id), title=i.title, thumbnailURL=entry.media.thumbnail[0].url, description=i.summary, youtubeID=i.youtubeid, duration=int(entry.media.duration.seconds), date=i.video_production_end_date, onlineLikes=0, offlineLikes=offlk, onlineViews=int(entry.statistics.view_count), offlineViews=offvw, adoptions=adops, sector=sec, subsector=subsec, topic=top, subtopic=subtop, subject=sub, partner=partner, language=lang, state = i.village.block.district.state.state_name)
                         temp.save()
+## remove this save after discusiion with nandini
                 except Exception, ex:
                     temp=Video(uid=str(i.id), title=i.title, description=i.summary, date=i.video_production_end_date, onlineLikes=0, offlineLikes=offlk, onlineViews=0, offlineViews=offvw, adoptions=adops, sector=sec, subsector=subsec, topic=top, subtopic=subtop, subject=sub, partner=partner, language=lang, state = i.village.block.district.state.state_name)
                     temp.save()
                     print ex
                     pass
+## TODO remove this discussion nandini
             else:
                 temp=Video(uid=str(i.id), title=i.title, description=i.summary, date=i.video_production_end_date, onlineLikes=0, offlineLikes=offlk, onlineViews=0, offlineViews=offvw, adoptions=adops, sector=sec, subsector=subsec, topic=top, subtopic=subtop, subject=sub, partner=partner, language=lang, state = i.village.block.district.state.state_name)
                 temp.save()
@@ -124,6 +129,7 @@ class Migration(DataMigration):
                 subtopic = videos[0].subtopic
             else:
                 subtopic = ""
+## think about collection url
             temp = Collection(uid=str(counter), title=videos[0].topic, thumbnailURL=videos[0].thumbnailURL, state=state, country=country, partner=Partner.objects.get(uid=partner), language=Language.objects.get(name=lang), category=sector, subcategory=subsector, topic=videos[0].topic, subtopic=subtopic,  subject=subject)
             temp.save()
             part= Partner.objects.get(uid=partner)
@@ -172,6 +178,7 @@ class Migration(DataMigration):
 
         partner = Partner.objects.all()
         for i in partner:
+## count uid not sum
             stats = Video.objects.filter(partner_id=i.uid).aggregate(videos = Sum('uid'), onlineLikes = Sum('onlineLikes'), offlineLikes = Sum('offlineLikes'), onlineViews = Sum('onlineViews'), offlineViews = Sum('offlineViews'), adoptions = Sum('adoptions'))
             if stats['videos']!=None:
                 i.videos = stats['videos']
@@ -299,7 +306,7 @@ class Migration(DataMigration):
                         if len(Video.objects.filter(uid=str(k.id)))==1:
                             temp=Comment(uid=str(counter),date=j.screening.date,text=j.expressed_question,isOnline=False,farmer=i,video =Video.objects.get(uid=str(k.id)) )
                             temp.save()
-            
+            # update counter
             
     def backwards(self, orm):
         pass
