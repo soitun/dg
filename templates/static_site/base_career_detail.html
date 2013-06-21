@@ -1,0 +1,42 @@
+{% extends "base_career.html" %}
+
+{% block title %} Digital Green - Careers - {{obj.title}}{% endblock %}
+
+{% block partnerbreadcrums %} 	 
+	 <a href='/career'>Careers</a> /
+	 <span style='font-size:0.9em; font-weight:bold;'> {{obj.title}} </span>
+{% endblock partnerbreadcrums %}
+
+
+{% block mainbodycontentleft %}
+	
+	<div class='pagetitle'>
+		{{obj.title}}
+	</div>
+	
+	<div id='content2descdiv'>
+		{% for des in desc%}
+			{{des}}</br></br>
+		{% endfor %}			
+		
+		Key Responsibilities:
+		<ul type="square">
+			{%for key in key_res %}
+				<li>{{key.point}}</li>
+			{% endfor %}
+		</ul>
+		</br>
+		
+		Qualification and Skills:
+		<ul type="square">
+			{%for exp in exp_qual %}
+				<li>{{exp.point}}</li>
+			{% endfor %}
+		</ul>
+		</br>
+		
+		{{obj.conclusion}}</br>
+		
+	</div>
+	
+{% endblock mainbodycontentleft %}

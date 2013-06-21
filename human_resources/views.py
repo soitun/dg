@@ -1,7 +1,7 @@
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-from human_resources.models import location_choices, Member, team_choices
-
+from human_resources.models import ExperienceQualification ,Job, KeyResponsibilities, location_choices, Member, team_choices
+import re
 def member_view(request):
     location_list = []
     for location in location_choices:
@@ -15,3 +15,23 @@ def member_view(request):
                               'location_team_members': team_list})
     return render_to_response('team.html', {'location_list': location_list},
                               context_instance=RequestContext(request))
+
+def job_view(request):
+    job_list = Job.objects.all().order_by('title')  
+    return render_to_response('base_career.html',{'job_list':job_list})
+
+def job_detail(request, job_id):
+    job_list = Job.objects.all().order_by('title')
+    job = Job.objects.filter(id = job_id)
+    obj = job[0]
+    desc = re.split('\s{2,}',obj.description)
+    key_res = KeyResponsibilities.objects.filter(job=job_id)
+    exp_qual = ExperienceQualification.objects.filter(job=job_id)
+    return render_to_response('base_career_detail.html',{'obj':obj,
+                                                                  'key_res':key_res,
+                                                                  'exp_qual':exp_qual,
+                                                                  'job_list':job_list,
+                                                                  'desc':desc
+                                                                  }
+                              )
+    
